@@ -42,6 +42,17 @@ resource "aws_iam_role_policy" "app_permissions" {
               "ses:SendRawEmail"
             ],
             "Resource": "*"
+        },
+        {
+            "Sid": "DescribeReservedInstances",
+            "Effect": "Allow",
+            "Action": [
+              "ec2:DescribeReservedInstances",
+              "ec2:DescribeReservedInstancesOfferings",
+              "rds:DescribeReservedDBInstances",
+              "rds:DescribeReservedDBInstancesOfferings"
+            ],
+            "Resource": "*"
         }
     ]
 }
