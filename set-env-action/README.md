@@ -20,7 +20,7 @@ The computed environment name
 ```
 - name: Set environment
   id: set_env
-  uses: mechtron/jira-gsheets-exporter/set-env-action@2.0.0
+  uses: mechtron/amazon-reservation-exporter/set-env-action@0.2.0
 ```
 
 ### Get
