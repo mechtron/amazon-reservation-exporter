@@ -1,0 +1,8 @@
+--- 
+  aws:
+    enabled:
+      - ec2
+      - rds
+
+  google_sheets:
+    sheet_name: Reserved Instances Analyzer
