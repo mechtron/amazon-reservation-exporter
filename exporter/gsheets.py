@@ -63,7 +63,7 @@ class GoogleSheet:
         for cell in cell_list:
             if (
                 len(cell_data) > cell.row
-                and len(cell_data[cell.row - 1]) > cell.col
+                and len(cell_data[cell.row - 1]) >= cell.col
             ):
                 cell.value = cell_data[cell.row - 1][cell.col - 1]
             else:
