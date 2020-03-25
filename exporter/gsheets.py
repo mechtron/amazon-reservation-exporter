@@ -61,7 +61,13 @@ class GoogleSheet:
             build_range(2, column_count, row_count)
         )
         for cell in cell_list:
-            cell.value = cell_data[cell.row - 1][cell.col - 1]
+            if (
+                len(cell_data) > cell.row
+                and len(cell_data[cell.row - 1]) > cell.col
+            ):
+                cell.value = cell_data[cell.row - 1][cell.col - 1]
+            else:
+                cell.value = ""
         return cell_list
 
     def update_cells(self, cell_data):
