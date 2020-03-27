@@ -108,7 +108,9 @@ def main():
     # Get raw data for all enabled regions
     reservation_data = {}
     for aws_region in config["aws"]["regions"]:
-        reservation_data[aws_region] = get_my_reservation_data(aws_region)
+        reservation_data[aws_region] = get_my_reservation_data(
+            aws_region, config["aws"]["enabled_reports"],
+        )
 
     # Process raw data into sheets
     sheets = process_aws_data(reservation_data)
