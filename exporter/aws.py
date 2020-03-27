@@ -1,15 +1,18 @@
+import os
+
 import boto3
 
 
-EC2_CLIENT = boto3.client("ec2")
-RDS_CLIENT = boto3.client("rds")
+DEFAULT_REGION = os.environ.get("DEFAULT_REGION", "us-east-1")
 
 
-def get_my_reservations():
-    ec2_reservations = EC2_CLIENT.describe_reserved_instances()[
+def get_my_reservations(aws_region):
+    ec2_client = boto3.client("ec2", aws_region)
+    rds_client = boto3.client("rds", aws_region)
+    ec2_reservations = ec2_client.describe_reserved_instances()[
         "ReservedInstances"
     ]
-    rds_reservations = RDS_CLIENT.describe_reserved_db_instances()[
+    rds_reservations = rds_client.describe_reserved_db_instances()[
         "ReservedDBInstances"
     ]
     return {
@@ -18,11 +21,13 @@ def get_my_reservations():
     }
 
 
-def get_reservation_offerings():
-    ec2_reservation_offerings = EC2_CLIENT.describe_reserved_instances_offerings()[
+def get_reservation_offerings(aws_region):
+    ec2_client = boto3.client("ec2", aws_region)
+    rds_client = boto3.client("rds", aws_region)
+    ec2_reservation_offerings = ec2_client.describe_reserved_instances_offerings()[
         "ReservedInstancesOfferings"
     ]
-    rds_reservation_offerings = RDS_CLIENT.describe_reserved_db_instances_offerings()[
+    rds_reservation_offerings = rds_client.describe_reserved_db_instances_offerings()[
         "ReservedDBInstancesOfferings"
     ]
     return {
@@ -31,8 +36,8 @@ def get_reservation_offerings():
     }
 
 
-def get_my_reservation_data():
+def get_my_reservation_data(aws_region=DEFAULT_REGION):
     return {
-        "my_reservations": get_my_reservations(),
-        "reservation_offerings": get_reservation_offerings(),
+        "my_reservations": get_my_reservations(aws_region),
+        "reservation_offerings": get_reservation_offerings(aws_region),
     }
