@@ -26,7 +26,14 @@ def process_aws_data(reservation_data):
     sheets = []
     for aws_service in services_enabled:
         for data_type in data_enabled:
-            headers = None
+            headers = ["AwsRegion"]
+            headers.extend(
+                list(
+                    reservation_data[list(reservation_data.keys())[0]][
+                        data_type
+                    ][aws_service][0].keys()
+                )
+            )
             rows = []
             for aws_region in reservation_data:
                 print(
@@ -40,14 +47,6 @@ def process_aws_data(reservation_data):
                 for aws_data in reservation_data[aws_region][data_type][
                     aws_service
                 ]:
-                    headers = ["AwsRegion"]
-                    headers.extend(
-                        list(
-                            reservation_data[aws_region][data_type][
-                                aws_service
-                            ][0].keys()
-                        )
-                    )
                     row = []
                     for header in headers:
                         if header == "AwsRegion":
