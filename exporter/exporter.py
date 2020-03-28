@@ -122,6 +122,10 @@ def process_aws_tagged_resources(tagged_resources):
                         row.append(aws_region)
                     elif header not in resource:
                         row.append("")
+                    elif header == "Tags":
+                        row.append(json.dumps(resource[header]))
+                    elif header == "State":
+                        row.append(resource[header]["Name"])
                     elif isinstance(
                         resource[header], datetime.datetime
                     ):  # Google Sheets-friendly dates
