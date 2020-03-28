@@ -54,11 +54,16 @@ class GoogleSheet:
 
     def write_header_row(self, report_columns):
         print("Updating the header row..")
-        row = 1
-        column = 1
-        for key in report_columns:
-            self.worksheet.update_cell(row, column, key)
+        cell_list = self.worksheet.range(
+            build_range(1, len(report_columns), 1)
+        )
+        column = 0
+        for cell in cell_list:
+            cell.value = report_columns[column]
             column += 1
+        self.worksheet.update_cells(
+            cell_list, value_input_option="USER_ENTERED"
+        )
 
     def format_cell_data(self, cell_data):
         print("Formatting cell data..")
