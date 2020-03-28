@@ -1,4 +1,7 @@
 --- 
+  google_sheets:
+    sheet_name: Reserved Instances Analyzer
+
   aws:
     regions:
       - us-east-1
@@ -8,7 +11,26 @@
 
     enabled_reports:
       - ec2
-      - rds  
+      - rds
 
-  google_sheets:
-    sheet_name: Reserved Instances Analyzer
+    ec2_include_tags:
+      - aws_region: us-east-1
+        tag_name: Name
+        tag_value: gumgum-databricks-prod-worker
+      - aws_region: us-west-2
+        tag_name: Name
+        tag_value: or-fluentd-universal-aggregator
+      - aws_region: ap-northeast-1
+        tag_name: Name
+        tag_value: jp-ad-server-adserving
+      - aws_region: eu-west-1
+        tag_name: Name
+        tag_value: ie-rtb-v3-schema-registry--prod
+      - aws_region: us-east-1
+        tag_name: Name
+        tag_value: va-dsci--verity
+
+    rds_include_tags:
+      - aws_region: us-east-1
+        tag_name: workload-type
+        tag_value: production

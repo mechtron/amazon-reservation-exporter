@@ -9,7 +9,10 @@ import string
 import time
 import yaml
 
-from aws import get_my_reservation_data
+from aws import (
+    get_my_reservation_data,
+    get_my_tagged_resources,
+)
 from gsheets import (
     build_range,
     convert_to_gsheets_friendly_date,
@@ -17,7 +20,7 @@ from gsheets import (
 )
 
 
-def process_aws_data(reservation_data):
+def process_aws_reservation_data(reservation_data):
     first_region = list(reservation_data.keys())[0]
     data_enabled = list(reservation_data[first_region].keys())
     services_enabled = list(
@@ -96,6 +99,50 @@ def process_aws_data(reservation_data):
     return sheets
 
 
+def process_aws_tagged_resources(tagged_resources):
+    first_region = list(tagged_resources.keys())[0]
+    services_enabled = list(tagged_resources[first_region].keys())
+    sheets = []
+    for aws_service in services_enabled:
+        headers = ["AwsRegion"]
+        headers.extend(
+            list(tagged_resources[first_region][aws_service][0].keys())
+        )
+        rows = []
+        for aws_region in tagged_resources:
+            print(
+                "Processing data for {aws_region} {aws_service}..".format(
+                    aws_region=aws_region, aws_service=aws_service,
+                )
+            )
+            for resource in tagged_resources[aws_region][aws_service]:
+                row = []
+                for header in headers:
+                    if header == "AwsRegion":
+                        row.append(aws_region)
+                    elif header not in resource:
+                        row.append("")
+                    elif isinstance(
+                        resource[header], datetime.datetime
+                    ):  # Google Sheets-friendly dates
+                        row.append(
+                            convert_to_gsheets_friendly_date(resource[header])
+                        )
+                    elif isinstance(resource[header], (dict, list)):
+                        row.append("<Object>")
+                    else:
+                        row.append(resource[header])
+                rows.append(row)
+        sheets.append(
+            {
+                "sheet_name": "{}_my_instances".format(aws_service.lower()),
+                "headers": headers,
+                "rows": rows,
+            }
+        )
+    return sheets
+
+
 def load_config():
     config_path = "{}/config.yml".format(Path(__file__).parent.absolute())
     with open(config_path, "r") as stream:
@@ -105,15 +152,26 @@ def load_config():
 def main():
     config = load_config()
 
-    # Get raw data for all enabled regions
+    # Look-up per-service usage
+    tagged_resources = {}
+    for aws_region in config["aws"]["regions"]:
+        tagged_resources[aws_region] = get_my_tagged_resources(
+            aws_region=aws_region,
+            enabled_services=config["aws"]["enabled_reports"],
+            ec2_include_tags=config["aws"]["ec2_include_tags"],
+            rds_include_tags=config["aws"]["rds_include_tags"],
+        )
+
+    # Get reservation data for all enabled regions
     reservation_data = {}
     for aws_region in config["aws"]["regions"]:
         reservation_data[aws_region] = get_my_reservation_data(
             aws_region, config["aws"]["enabled_reports"],
         )
 
-    # Process raw data into sheets
-    sheets = process_aws_data(reservation_data)
+    # Process data into sheets
+    sheets = process_aws_tagged_resources(tagged_resources)
+    sheets.extend(process_aws_reservation_data(reservation_data))
 
     # Update Google Sheets
     google_sheet = GoogleSheet(config["google_sheets"]["sheet_name"])
