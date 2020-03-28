@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import string
 
@@ -14,6 +15,12 @@ def convert_to_gsheets_friendly_date(dt):
 
 
 def build_range(row_number, column_count, row_count):
+    if column_count > 25:
+        numerator = math.floor(column_count / 26)
+        remainder = column_count - numerator * 26
+        return "A{0}:A{1}{2}".format(
+            row_number, string.ascii_uppercase[remainder - 1], row_count,
+        )
     return "A{0}:{1}{2}".format(
         row_number, string.ascii_uppercase[column_count - 1], row_count,
     )
@@ -36,7 +43,7 @@ class GoogleSheet:
     def create_tab(self, sheet_tab_name):
         print("Creating new tab {}..".format(sheet_tab_name))
         self.spreadsheet.add_worksheet(
-            title=sheet_tab_name, rows="1000", cols="26",
+            title=sheet_tab_name, rows="1000", cols="52",
         )
 
     def change_sheet_tab(self, sheet_tab_name):
@@ -47,11 +54,27 @@ class GoogleSheet:
 
     def write_header_row(self, report_columns):
         print("Updating the header row..")
-        row = 1
-        column = 1
-        for key in report_columns:
-            self.worksheet.update_cell(row, column, key)
+        cell_list = self.worksheet.range(
+            build_range(1, len(report_columns), 1)
+        )
+        column = 0
+        for cell in cell_list:
+            cell.value = report_columns[column]
             column += 1
+        self.worksheet.update_cells(
+            cell_list, value_input_option="USER_ENTERED"
+        )
+
+    def wipe_data_rows(self, report_columns):
+        print("Zeroing data on the sheet with name", self.worksheet.title)
+        cell_list = self.worksheet.range(
+            build_range(2, self.worksheet.col_count, self.worksheet.row_count)
+        )
+        for cell in cell_list:
+            cell.value = ""
+        self.worksheet.update_cells(
+            cell_list, value_input_option="USER_ENTERED"
+        )
 
     def format_cell_data(self, cell_data):
         print("Formatting cell data..")
