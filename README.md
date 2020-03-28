@@ -75,12 +75,45 @@ Exports AWS reservation data for a particular AWS account to a Google Sheet for 
 	1. `environment` is the name of your environment
 	1. `ses_from_email` is the address you wish to send failure notification emails from.
 1. Open the `prod` environment's config yaml `config/prod.yml` and update the values to define the shape of your report:
-	| Parameter | Description | Allowed values | Additional required fields |
-	| :----: | :----: | :----: | :----: |
-	| `google_sheets.sheet_name` | Name of the Google Sheet from the previous step | `String` |  |
-	| `aws.enabled[]` |  | `List` |  |
+	| Parameter | Description | Allowed values |
+	| :----: | :----: | :----: |
+	| `google_sheets.sheet_name` | Name of the Google Sheet from the previous step | `String` |
+	| `aws.regions[]` | List of AWS regions to scrape data for | `List` |
+	| `aws.enabled_reports[]` | List of enabled reports. Supported options: `ec2`, `rds` | `List` |
+	| `aws.ec2_include_tags[]` | List of EC2 instance tags to scrape data for | `List` |
+	| `aws.rds_include_tags[]` | List of RDS instance tags to scrape data for | `List` |
 
 1. Commit your changes to the `master` branch and your `prod` environment will be deployed via GitHub Actions
+
+#### Example configuration
+
+```
+--- 
+  google_sheets:
+    sheet_name: Reserved Instances Analyzer
+  
+  aws:
+    regions:
+      - us-east-1
+      - us-west-2
+
+    enabled_reports:
+      - ec2
+      - rds
+
+    ec2_include_tags:
+      - aws_region: us-east-1
+        tag_name: Name
+        tag_value: va-api--prod
+      - aws_region: us-west-2
+        tag_name: Name
+        tag_value: or-api--prod
+
+    rds_include_tags:
+      - aws_region: us-east-1
+        tag_name: DBName
+        tag_value: va-db--prod
+```
 
 ### Destroying environments
 
@@ -128,13 +161,12 @@ All of the AWS resources provisioned by this project fit within [AWS's always-fr
 
 ## To do
 
-Add data from:
+Consider adding reports with data from Cost Explorer:
 
-1. https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html
-1. https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_reservation_coverage
-1. https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_reservation_purchase_recommendation
-1. https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_reservation_utilization
-1. https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_rightsizing_recommendation
-1. https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_savings_plans_coverage
-1. https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_savings_plans_utilization
-1. https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_savings_plans_utilization_details
+1. [CostExplorer.Client.get_reservation_coverage](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_reservation_coverage)
+1. [CostExplorer.Client.get_reservation_purchase_recommendation](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_reservation_purchase_recommendation)
+1. [CostExplorer.Client.get_reservation_utilization](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_reservation_utilization)
+1. [CostExplorer.Client.get_rightsizing_recommendation](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_rightsizing_recommendation)
+1. [CostExplorer.Client.get_savings_plans_coverage](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_savings_plans_coverage)
+1. [CostExplorer.Client.get_savings_plans_utilization](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_savings_plans_utilization)
+1. [CostExplorer.Client.get_savings_plans_utilization_details](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_savings_plans_utilization_details)
