@@ -65,6 +65,17 @@ class GoogleSheet:
             cell_list, value_input_option="USER_ENTERED"
         )
 
+    def wipe_data_rows(self, report_columns):
+        print("Zeroing data on the sheet with name", self.worksheet.title)
+        cell_list = self.worksheet.range(
+            build_range(2, self.worksheet.col_count, self.worksheet.row_count)
+        )
+        for cell in cell_list:
+            cell.value = ""
+        self.worksheet.update_cells(
+            cell_list, value_input_option="USER_ENTERED"
+        )
+
     def format_cell_data(self, cell_data):
         print("Formatting cell data..")
         column_count = len(cell_data[0])

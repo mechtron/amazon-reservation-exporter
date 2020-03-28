@@ -183,6 +183,7 @@ def main():
         print("Updating sheet with name {}".format(sheet["sheet_name"]))
         google_sheet.change_sheet_tab(sheet["sheet_name"])
         google_sheet.write_header_row(sheet["headers"])
+        google_sheet.wipe_data_rows(sheet["headers"])
         google_sheet.update_cells(sheet["rows"])
 
 
