@@ -47,10 +47,13 @@ resource "aws_iam_role_policy" "app_permissions" {
             "Sid": "DescribeReservedInstances",
             "Effect": "Allow",
             "Action": [
+              "ec2:DescribeInstances",
               "ec2:DescribeReservedInstances",
               "ec2:DescribeReservedInstancesOfferings",
+              "rds:DescribeDBInstances",
               "rds:DescribeReservedDBInstances",
-              "rds:DescribeReservedDBInstancesOfferings"
+              "rds:DescribeReservedDBInstancesOfferings",
+              "rds:ListTagsForResource"
             ],
             "Resource": "*"
         }
