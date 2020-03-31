@@ -82,23 +82,24 @@ def get_my_tagged_resources(**kwargs):
     tagged_resources = {}
     for enabled_service in kwargs["enabled_services"]:
         if enabled_service not in tagged_resources:
-            tagged_resources[enabled_service] = []
+            tagged_resources[enabled_service] = {}
         if enabled_service == "ec2":
-            for tag in kwargs["ec2_include_tags"]:
-                tagged_resources[enabled_service].extend(
-                    get_my_ec2_instances(
-                        kwargs["aws_region"],
-                        tag["tag_name"],
-                        tag["tag_value"],
-                    )
+            # TODO: support multiple tags per resource (using AND/OR logic)
+            for tag in kwargs["ec2_tag_groups"]:
+                tagged_resources[enabled_service][
+                    tag["name"]
+                ] = get_my_ec2_instances(
+                    kwargs["aws_region"],
+                    tag["tags"][0]["tag_name"],
+                    tag["tags"][0]["tag_value"],
                 )
         if enabled_service == "rds":
-            for tag in kwargs["rds_include_tags"]:
-                tagged_resources[enabled_service].extend(
-                    get_my_rds_instances(
-                        kwargs["aws_region"],
-                        tag["tag_name"],
-                        tag["tag_value"],
-                    )
+            for tag in kwargs["rds_tag_groups"]:
+                tagged_resources[enabled_service][
+                    tag["name"]
+                ] = get_my_rds_instances(
+                    kwargs["aws_region"],
+                    tag["tags"][0]["tag_name"],
+                    tag["tags"][0]["tag_value"],
                 )
     return tagged_resources

@@ -13,24 +13,256 @@
       - ec2
       - rds
 
-    ec2_include_tags:
-      - aws_region: us-east-1
-        tag_name: Name
-        tag_value: gumgum-databricks-prod-worker
-      - aws_region: us-west-2
-        tag_name: Name
-        tag_value: or-fluentd-universal-aggregator
-      - aws_region: ap-northeast-1
-        tag_name: Name
-        tag_value: jp-ad-server-adserving
-      - aws_region: eu-west-1
-        tag_name: Name
-        tag_value: ie-rtb-v3-schema-registry--prod
-      - aws_region: us-east-1
-        tag_name: Name
-        tag_value: va-dsci--verity
+    ec2_tag_groups:
+      - name: va-adserver
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: va-ad-server-adserving
+          - tag_name: Name
+            tag_value: va-ad-server-adserving-new-relic
+          - tag_name: Name
+            tag_value: va-ad-server-adserving-test-new-relic
+          - tag_name: Name
+            tag_value: va-ad-server-default
+          - tag_name: Name
+            tag_value: va-ad-server-default-new-relic
+          - tag_name: Name
+            tag_value: va-ad-server-default-test-new-relic
+          - tag_name: Name
+            tag_value: va-ad-server-ssp
+          - tag_name: Name
+            tag_value: va-ad-server-ssp-new-relic
+          - tag_name: Name
+            tag_value: va-ad-server-ssp-test-new-relic
+          - tag_name: Name
+            tag_value: va-ad-server-ecs--prod
+          - tag_name: Name
+            tag_value: va-dynamodb-visitor-replication
 
-    rds_include_tags:
-      - aws_region: us-east-1
-        tag_name: workload-type
-        tag_value: production
+      - name: or-adserver
+        aws_region: us-west-2
+        tags:
+          - tag_name: Name
+            tag_value: or-ad-server-adserving
+          - tag_name: Name
+            tag_value: or-ad-server-adserving-new-relic
+          - tag_name: Name
+            tag_value: or-ad-server-default
+          - tag_name: Name
+            tag_value: or-ad-server-default-new-relic
+          - tag_name: Name
+            tag_value: or-ad-server-ssp
+          - tag_name: Name
+            tag_value: or-ad-server-ssp-new-relic
+          - tag_name: Name
+            tag_value: or-ad-server-ecs--prod
+          - tag_name: Name
+            tag_value: or-dynamodb-visitor-replication
+          - tag_name: Name
+            tag_value: or-aws-api-server
+
+      - name: jp-adserver
+        aws_region: ap-northeast-1
+        tags:
+          - tag_name: Name
+            tag_value: jp-ad-server-adserving
+          - tag_name: Name
+            tag_value: jp-ad-server-adserving-new-relic
+          - tag_name: Name
+            tag_value: jp-ad-server-default
+          - tag_name: Name
+            tag_value: jp-ad-server-default-new-relic
+          - tag_name: Name
+            tag_value: jp-ad-server-ssp
+          - tag_name: Name
+            tag_value: jp-ad-server-ssp-new-relic
+          - tag_name: Name
+            tag_value: jp-ad-server-ecs--prod
+          - tag_name: Name
+            tag_value: jp-aws-api-server
+
+      - name: ie-adserver
+        aws_region: eu-west-1
+        tags:
+          - tag_name: Name
+            tag_value: ie-ad-server-adserving
+          - tag_name: Name
+            tag_value: ie-ad-server-adserving-new-relic
+          - tag_name: Name
+            tag_value: ie-ad-server-default
+          - tag_name: Name
+            tag_value: ie-ad-server-default-new-relic
+          - tag_name: Name
+            tag_value: ie-ad-server-ssp
+          - tag_name: Name
+            tag_value: ie-ad-server-ssp-new-relic
+          - tag_name: Name
+            tag_value: ie-ad-server-ecs--prod
+          - tag_name: Name
+            tag_value: ie-aws-api-server
+
+      - name: va-astronomer
+        aws_region: us-east-1
+        tags:
+          - tag_name: Billing
+            tag_value: astronomer-airflow-poc
+
+      - name: va-consul-server
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: consul-server
+
+      - name: va-cron
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: va-churro
+          - tag_name: Name
+            tag_value: va-cron-ad-server-mango
+          - tag_name: Name
+            tag_value: va-devtaco
+          - tag_name: Name
+            tag_value: va-taco
+          - tag_name: Name
+            tag_value: va-guacamole
+
+      - name: or-cron
+        aws_region: us-west-2
+        tags:
+          - tag_name: Name
+            tag_value: or-donut
+
+      - name: jp-cron
+        aws_region: ap-northeast-1
+        tags:
+          - tag_name: Name
+            tag_value: jp-sushi
+
+      - name: ie-cron
+        aws_region: eu-west-1
+        tags:
+          - tag_name: Name
+            tag_value: ie-coddle
+
+      - name: va-druid
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: va-druid-0-11-broker
+          - tag_name: Name
+            tag_value: va-druid-0-11-coordinator
+          - tag_name: Name
+            tag_value: va-druid-0-11-overlord
+          - tag_name: Name
+            tag_value: va-druid-0-11-middleManager
+          - tag_name: Name
+            tag_value: va-druid-bi-0-11-broker-00
+          - tag_name: Name
+            tag_value: va-druid-0-11-historical-cold
+          - tag_name: Name
+            tag_value: va-druid-0-11-historical-hot
+          - tag_name: Name
+            tag_value: zookeeper-va-druid-0-11
+
+      - name: va-dsci
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: va-dsci-http--prod
+          - tag_name: Name
+            tag_value: va-kafka-monitoring-dsci
+
+      - name: va-emr
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: va-emr-forecasting-cluster
+
+      - name: va-fluentd
+        aws_region: us-east-1
+        tags:
+          - tag_name: AnsibleClusterId
+            tag_value: va-fluentd-slot-aggregator
+          - tag_name: AnsibleClusterId
+            tag_value: va-fluentd-universal-aggregator  
+
+      - name: or-fluentd
+        aws_region: us-west-2
+        tags:
+          - tag_name: AnsibleClusterId
+            tag_value: or-fluentd-slot-aggregator
+          - tag_name: AnsibleClusterId
+            tag_value: or-fluentd-universal-aggregator
+
+      - name: jp-fluentd
+        aws_region: ap-northeast-1
+        tags:
+          - tag_name: AnsibleClusterId
+            tag_value: jp-fluentd-slot-aggregator
+          - tag_name: AnsibleClusterId
+            tag_value: jp-fluentd-universal-aggregator
+
+      - name: ie-fluentd
+        aws_region: eu-west-1
+        tags:
+          - tag_name: AnsibleClusterId
+            tag_value: ie-fluentd-slot-aggregator
+          - tag_name: AnsibleClusterId
+            tag_value: ie-fluentd-universal-aggregator
+
+      - name: va-jenkins
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: va-jenkins-ci-ad-server
+          - tag_name: Name
+            tag_value: va-jenkins
+          - tag_name: Name
+            tag_value: va-jenkins-ci-web-engineering
+          - tag_name: Name
+            tag_value: va-jenkins-ci-croissant
+
+      - name: va-kafka
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: va-rtb-v3-kafka--prod
+          - tag_name: Name
+            tag_value: va-universal-v3-kafka--prod
+          - tag_name: Name
+            tag_value: kafka-confluent-rtb-v3-zookeeper
+          - tag_name: Name
+            tag_value: kafka-confluent-universal-v3-zookeeper
+      
+      - name: or-kafka
+        aws_region: us-west-2
+        tags:
+          - tag_name: Name
+            tag_value: or-rtb-v3-schema-registry--prod
+
+      - name: ie-kafka
+        aws_region: eu-west-1
+        tags:
+          - tag_name: Name
+            tag_value: ie-rtb-v3-schema-registry--prod     
+
+      - name: va-storm
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: va-taskrunner-wg1
+          - tag_name: Name
+            tag_value: va-taskrunner-wg2
+
+      - name: va-taskrunner
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: va-storm-universal-zookeeper
+
+    # rds_tag_groups:
+    #   - aws_region: us-east-1
+    #     tag_name: workload-type
+    #     tag_value: production

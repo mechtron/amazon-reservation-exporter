@@ -104,10 +104,7 @@ def process_aws_tagged_resources(tagged_resources):
     services_enabled = list(tagged_resources[first_region].keys())
     sheets = []
     for aws_service in services_enabled:
-        headers = ["AwsRegion"]
-        headers.extend(
-            list(tagged_resources[first_region][aws_service][0].keys())
-        )
+        headers = ["TagGroup", "AwsRegion"]
         rows = []
         for aws_region in tagged_resources:
             print(
@@ -115,28 +112,45 @@ def process_aws_tagged_resources(tagged_resources):
                     aws_region=aws_region, aws_service=aws_service,
                 )
             )
-            for resource in tagged_resources[aws_region][aws_service]:
-                row = []
-                for header in headers:
-                    if header == "AwsRegion":
-                        row.append(aws_region)
-                    elif header not in resource:
-                        row.append("")
-                    elif header == "Tags":
-                        row.append(json.dumps(resource[header]))
-                    elif header == "State":
-                        row.append(resource[header]["Name"])
-                    elif isinstance(
-                        resource[header], datetime.datetime
-                    ):  # Google Sheets-friendly dates
-                        row.append(
-                            convert_to_gsheets_friendly_date(resource[header])
-                        )
-                    elif isinstance(resource[header], (dict, list)):
-                        row.append("<Object>")
-                    else:
-                        row.append(resource[header])
-                rows.append(row)
+            for tag_group_name in tagged_resources[aws_region][aws_service]:
+                if (
+                    len(
+                        tagged_resources[aws_region][aws_service][
+                            tag_group_name
+                        ]
+                    )
+                    > 0
+                ):
+                    for resource in tagged_resources[aws_region][aws_service][
+                        tag_group_name
+                    ]:
+                        if len(headers) == 2:
+                            headers.extend(list(resource.keys()))
+                        row = []
+                        for header in headers:
+                            if header == "TagGroup":
+                                row.append(tag_group_name)
+                            elif header == "AwsRegion":
+                                row.append(aws_region)
+                            elif header not in resource:
+                                row.append("")
+                            elif header == "Tags":
+                                row.append(json.dumps(resource[header]))
+                            elif header == "State":
+                                row.append(resource[header]["Name"])
+                            elif isinstance(
+                                resource[header], datetime.datetime,
+                            ):  # Google Sheets-friendly dates
+                                row.append(
+                                    convert_to_gsheets_friendly_date(
+                                        resource[header]
+                                    )
+                                )
+                            elif isinstance(resource[header], (dict, list),):
+                                row.append("<Object>")
+                            else:
+                                row.append(resource[header])
+                        rows.append(row)
         sheets.append(
             {
                 "sheet_name": "{}_my_instances".format(aws_service.lower()),
@@ -162,8 +176,8 @@ def main():
         tagged_resources[aws_region] = get_my_tagged_resources(
             aws_region=aws_region,
             enabled_services=config["aws"]["enabled_reports"],
-            ec2_include_tags=config["aws"]["ec2_include_tags"],
-            rds_include_tags=config["aws"]["rds_include_tags"],
+            ec2_tag_groups=config["aws"]["ec2_tag_groups"],
+            rds_tag_groups=config["aws"]["rds_tag_groups"],
         )
 
     # Get reservation data for all enabled regions

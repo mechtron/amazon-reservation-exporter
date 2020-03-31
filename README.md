@@ -80,8 +80,8 @@ Exports AWS reservation data for a particular AWS account to a Google Sheet for 
 	| `google_sheets.sheet_name` | Name of the Google Sheet from the previous step | `String` |
 	| `aws.regions[]` | List of AWS regions to scrape data for | `List` |
 	| `aws.enabled_reports[]` | List of enabled reports. Supported options: `ec2`, `rds` | `List` |
-	| `aws.ec2_include_tags[]` | List of EC2 instance tags to scrape data for | `List` |
-	| `aws.rds_include_tags[]` | List of RDS instance tags to scrape data for | `List` |
+	| `aws.ec2_tag_groups[]` | List of EC2 instance tags to scrape data for | `List` |
+	| `aws.rds_tag_groups[]` | List of RDS instance tags to scrape data for | `List` |
 
 1. Commit your changes to the `master` branch and your `prod` environment will be deployed via GitHub Actions
 
@@ -101,7 +101,7 @@ Exports AWS reservation data for a particular AWS account to a Google Sheet for 
       - ec2
       - rds
 
-    ec2_include_tags:
+    ec2_tag_groups:
       - aws_region: us-east-1
         tag_name: Name
         tag_value: va-api--prod
@@ -109,7 +109,7 @@ Exports AWS reservation data for a particular AWS account to a Google Sheet for 
         tag_name: Name
         tag_value: or-api--prod
 
-    rds_include_tags:
+    rds_tag_groups:
       - aws_region: us-east-1
         tag_name: DBName
         tag_value: va-db--prod
