@@ -21,9 +21,6 @@ from gsheets import (
 
 
 def get_resource_instance_class(aws_service, resource):
-    # if "InstanceCount" in
-    #                             "DBInstanceCount"
-
     if aws_service == "ec2":
         return resource["InstanceType"].split(".")[0]
     elif aws_service == "rds":
