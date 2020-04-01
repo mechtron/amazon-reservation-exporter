@@ -47,6 +47,14 @@ def get_my_reservation_data(aws_region, enabled_reports):
 
 
 def get_my_ec2_instances(aws_region, tag_name, tag_value):
+    print(
+        (
+            "Looking up EC2 instances in {region} with tag "
+            "key {key} and tag value {value}.."
+        ).format(
+            region=aws_region, key=tag_name, value=tag_value,
+        )
+    )
     ec2_client = boto3.client("ec2", aws_region)
     ec2_instances_all_running = ec2_client.describe_instances(
         Filters=[
@@ -65,6 +73,14 @@ def get_my_ec2_instances(aws_region, tag_name, tag_value):
 
 
 def get_my_rds_instances(aws_region, tag_name, tag_value):
+    print(
+        (
+            "Looking up RDS instances in {region} with tag "
+            "key {key} and tag value {value}.."
+        ).format(
+            region=aws_region, key=tag_name, value=tag_value,
+        )
+    )
     rds_client = boto3.client("rds", aws_region)
     rds_instances = rds_client.describe_db_instances()
     filtered_rds_instances = []
@@ -94,12 +110,16 @@ def get_my_tagged_resources(**kwargs):
                     tag["tags"][0]["tag_value"],
                 )
         if enabled_service == "rds":
-            for tag in kwargs["rds_tag_groups"]:
-                tagged_resources[enabled_service][
-                    tag["name"]
-                ] = get_my_rds_instances(
-                    kwargs["aws_region"],
-                    tag["tags"][0]["tag_name"],
-                    tag["tags"][0]["tag_value"],
-                )
+            for tag_group in kwargs["rds_tag_groups"]:
+                tagged_resources[enabled_service][tag_group["name"]] = []
+                for tag in tag_group["tags"]:
+                    tagged_resources[enabled_service][
+                        tag_group["name"]
+                    ].extend(
+                        get_my_rds_instances(
+                            kwargs["aws_region"],
+                            tag["tag_name"],
+                            tag["tag_value"],
+                        )
+                    )
     return tagged_resources
