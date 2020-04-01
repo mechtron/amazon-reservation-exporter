@@ -21,6 +21,9 @@ from gsheets import (
 
 
 def get_resource_instance_class(aws_service, resource):
+    # if "InstanceCount" in
+    #                             "DBInstanceCount"
+
     if aws_service == "ec2":
         return resource["InstanceType"].split(".")[0]
     elif aws_service == "rds":
@@ -29,7 +32,9 @@ def get_resource_instance_class(aws_service, resource):
         raise Exception("Unexpected aws_service {}".format(aws_service))
 
 
-def get_resource_normalized_capacity(aws_service, resource):
+def get_resource_normalized_capacity(
+    aws_service, resource, mode="single_instance"
+):
     size_to_normalized = {
         "nano": 0.25,
         "micro": 0.5,
@@ -53,7 +58,12 @@ def get_resource_normalized_capacity(aws_service, resource):
     if aws_service == "ec2":
         ec2_size = resource["InstanceType"].split(".")[1]
         if ec2_size in size_to_normalized:
-            return size_to_normalized[ec2_size]
+            if mode == "single_instance":
+                return size_to_normalized[ec2_size]
+            elif mode == "all_instances":
+                return size_to_normalized[ec2_size] * resource["InstanceCount"]
+            else:
+                raise Exception("Unexpected mode {}".format(mode))
         else:
             return ""
     elif aws_service == "rds":
@@ -62,7 +72,12 @@ def get_resource_normalized_capacity(aws_service, resource):
         rds_size_normalized = size_to_normalized[rds_size]
         if rds_multi_az:
             rds_size_normalized = rds_size_normalized * 2
-        return rds_size_normalized
+        if mode == "single_instance":
+            return rds_size_normalized
+        elif mode == "all_instances":
+            return rds_size_normalized * resource["DBInstanceCount"]
+        else:
+            raise Exception("Unexpected mode {}".format(mode))
     else:
         raise Exception("Unexpected aws_service {}".format(aws_service))
 
@@ -76,7 +91,13 @@ def process_aws_reservation_data(reservation_data):
     sheets = []
     for aws_service in services_enabled:
         for data_type in data_enabled:
-            headers = ["AwsRegion", "InstanceClass", "NormalizedCapacity"]
+            headers = [
+                "AwsRegion",
+                "InstanceClass",
+                "NormalizedCapacity",
+            ]
+            if data_type == "my_reservations":
+                headers.append("NormalizedCapacityTotal")
             headers.extend(
                 list(
                     reservation_data[list(reservation_data.keys())[0]][
@@ -110,7 +131,13 @@ def process_aws_reservation_data(reservation_data):
                         elif header == "NormalizedCapacity":
                             row.append(
                                 get_resource_normalized_capacity(
-                                    aws_service, aws_data
+                                    aws_service, aws_data,
+                                )
+                            )
+                        elif header == "NormalizedCapacityTotal":
+                            row.append(
+                                get_resource_normalized_capacity(
+                                    aws_service, aws_data, "all_instances"
                                 )
                             )
                         elif header not in aws_data:

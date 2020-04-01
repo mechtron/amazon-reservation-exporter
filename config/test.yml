@@ -305,6 +305,12 @@
           - tag_name: Name
             tag_value: databricksprod
 
+      - name: va-drone
+        aws_region: us-east-1
+        tags:
+          - tag_name: Billing
+            tag_value: drone-cluster
+
       - name: va-druid
         aws_region: us-east-1
         tags:
