@@ -81,14 +81,14 @@ class GoogleSheet:
         column_count = len(cell_data[0])
         row_count = len(cell_data)
         cell_list = self.worksheet.range(
-            build_range(2, column_count, row_count)
+            build_range(2, column_count, row_count + 1)
         )
         for cell in cell_list:
             if (
                 len(cell_data) >= cell.row
                 and len(cell_data[cell.row - 1]) >= cell.col
             ):
-                cell.value = cell_data[cell.row - 1][cell.col - 1]
+                cell.value = cell_data[cell.row - 2][cell.col - 1]
             else:
                 cell.value = ""
         return cell_list

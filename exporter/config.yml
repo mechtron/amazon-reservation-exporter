@@ -3,15 +3,27 @@
     sheet_name: Reserved Instances Analyzer
 
   aws:
+    enabled_reports:
+      - ec2
+      - rds
+
     regions:
       - us-east-1
       - us-west-2
       - ap-northeast-1
       - eu-west-1
 
-    enabled_reports:
-      - ec2
-      - rds
+    accounts:
+      - name: ads
+        assume_role: false
+      - name: sports
+        assume_role_arn: "arn:aws:iam::564061425806:role/DevOpsAdminAccess"
+      - name: verity
+        assume_role_arn: "arn:aws:iam::000173938423:role/DevOpsAdminAccess"
+      - name: ssai
+        assume_role_arn: "arn:aws:iam::634280838161:role/DevOpsAdminAccess"
+      - name: sandbox
+        assume_role_arn: "arn:aws:iam::797146828779:role/DevOpsAdminAccess"
 
 #####
 # EC2
@@ -112,7 +124,7 @@
           - tag_name: Billing
             tag_value: astronomer-airflow-poc
 
-      - name: va-consul-server
+      - name: va-consul
         aws_region: us-east-1
         tags:
           - tag_name: Name
@@ -252,6 +264,12 @@
           - tag_name: Name
             tag_value: ie-rtb-v3-schema-registry--prod     
 
+      - name: va-sports
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: sports-api--prod
+                
       - name: va-storm
         aws_region: us-east-1
         tags:
@@ -265,6 +283,18 @@
         tags:
           - tag_name: Name
             tag_value: va-storm-universal-zookeeper
+            
+      - name: va-verity
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: va-verity-vertex-api-kafka--prod
+          - tag_name: Name
+            tag_value: va-verity-kafka--prod
+          - tag_name: Name
+            tag_value: va-prism-kafka--stage
+          - tag_name: Name
+            tag_value: va-nlp-kafka--stage
 
 #####
 # RDS
@@ -290,12 +320,6 @@
         tags:
           - tag_name: Name
             tag_value: business-intelligence
-
-      - name: va-creative-engineering
-        aws_region: us-east-1
-        tags:
-          - tag_name: Name
-            tag_value: creative-engineering
 
       - name: va-databricks
         aws_region: us-east-1
@@ -324,6 +348,26 @@
         tags:
           - tag_name: Name
             tag_value: va-monitoring-rds
+
+      - name: va-sports
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: insightsdb1
+
+      - name: va-verity
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: ai-vertex-api-prod
+          - tag_name: Name
+            tag_value: prism-aurora-prod
+          - tag_name: Name
+            tag_value: prism-aurora-stage
+          - tag_name: Name
+            tag_value: va-data-science
+          - tag_name: Name
+            tag_value: verity-vertex-api-aurora-prod
 
       - name: va-web-engineering
         aws_region: us-east-1

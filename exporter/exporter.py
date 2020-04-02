@@ -79,6 +79,27 @@ def get_resource_normalized_capacity(
         raise Exception("Unexpected aws_service {}".format(aws_service))
 
 
+def get_reservation_data_headers(reservation_data, aws_service, data_type):
+    headers = [
+        "AwsRegion",
+        "InstanceClass",
+        "NormalizedCapacity",
+    ]
+    if data_type == "my_reservations":
+        headers.append("NormalizedCapacityTotal")
+    for aws_region in reservation_data:
+        if len(reservation_data[aws_region][data_type][aws_service]) > 0:
+            headers.extend(
+                list(
+                    reservation_data[aws_region][data_type][aws_service][
+                        0
+                    ].keys()
+                )
+            )
+            return headers
+    return headers
+
+
 def process_aws_reservation_data(reservation_data):
     first_region = list(reservation_data.keys())[0]
     data_enabled = list(reservation_data[first_region].keys())
@@ -88,19 +109,8 @@ def process_aws_reservation_data(reservation_data):
     sheets = []
     for aws_service in services_enabled:
         for data_type in data_enabled:
-            headers = [
-                "AwsRegion",
-                "InstanceClass",
-                "NormalizedCapacity",
-            ]
-            if data_type == "my_reservations":
-                headers.append("NormalizedCapacityTotal")
-            headers.extend(
-                list(
-                    reservation_data[list(reservation_data.keys())[0]][
-                        data_type
-                    ][aws_service][0].keys()
-                )
+            headers = get_reservation_data_headers(
+                reservation_data, aws_service, data_type
             )
             rows = []
             for aws_region in reservation_data:
@@ -275,6 +285,7 @@ def main():
     for aws_region in config["aws"]["regions"]:
         tagged_resources[aws_region] = get_my_tagged_resources(
             aws_region=aws_region,
+            accounts=config["aws"]["accounts"],
             enabled_services=config["aws"]["enabled_reports"],
             ec2_tag_groups=config["aws"]["ec2_tag_groups"],
             rds_tag_groups=config["aws"]["rds_tag_groups"],
@@ -284,7 +295,9 @@ def main():
     reservation_data = {}
     for aws_region in config["aws"]["regions"]:
         reservation_data[aws_region] = get_my_reservation_data(
-            aws_region, config["aws"]["enabled_reports"],
+            aws_region,
+            config["aws"]["accounts"],
+            config["aws"]["enabled_reports"],
         )
 
     # Process data into sheets
@@ -294,11 +307,17 @@ def main():
     # Update Google Sheets
     google_sheet = GoogleSheet(config["google_sheets"]["sheet_name"])
     for sheet in sheets:
-        print("Updating sheet with name {}".format(sheet["sheet_name"]))
-        google_sheet.change_sheet_tab(sheet["sheet_name"])
-        google_sheet.write_header_row(sheet["headers"])
-        google_sheet.wipe_data_rows(sheet["headers"])
-        google_sheet.update_cells(sheet["rows"])
+        if len(sheet["rows"]) > 0:
+            print("Updating sheet with name {}".format(sheet["sheet_name"]))
+            google_sheet.change_sheet_tab(sheet["sheet_name"])
+            google_sheet.write_header_row(sheet["headers"])
+            google_sheet.wipe_data_rows(sheet["headers"])
+            google_sheet.update_cells(sheet["rows"])
+    print(
+        'Google Sheet "{}" successfully updated!'.format(
+            config["google_sheets"]["sheet_name"]
+        )
+    )
 
 
 def handler(event, context):
