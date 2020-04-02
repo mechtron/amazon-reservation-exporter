@@ -20,6 +20,65 @@ from gsheets import (
 )
 
 
+def get_resource_instance_class(aws_service, resource):
+    if aws_service == "ec2":
+        return resource["InstanceType"].split(".")[0]
+    elif aws_service == "rds":
+        return "db.{}".format(resource["DBInstanceClass"].split(".")[1])
+    else:
+        raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_normalized_capacity(
+    aws_service, resource, mode="single_instance"
+):
+    size_to_normalized = {
+        "nano": 0.25,
+        "micro": 0.5,
+        "small": 1,
+        "medium": 2,
+        "large": 4,
+        "xlarge": 8,
+        "2xlarge": 16,
+        "3xlarge": 24,
+        "4xlarge": 32,
+        "6xlarge": 48,
+        "8xlarge": 64,
+        "9xlarge": 72,
+        "10xlarge": 80,
+        "12xlarge": 96,
+        "16xlarge": 128,
+        "18xlarge": 144,
+        "24xlarge": 192,
+        "32xlarge": 256,
+    }
+    if aws_service == "ec2":
+        ec2_size = resource["InstanceType"].split(".")[1]
+        if ec2_size in size_to_normalized:
+            if mode == "single_instance":
+                return size_to_normalized[ec2_size]
+            elif mode == "all_instances":
+                return size_to_normalized[ec2_size] * resource["InstanceCount"]
+            else:
+                raise Exception("Unexpected mode {}".format(mode))
+        else:
+            return ""
+    elif aws_service == "rds":
+        rds_size = resource["DBInstanceClass"].split(".")[2]
+        rds_multi_az = resource["MultiAZ"]
+        rds_size_normalized = size_to_normalized[rds_size]
+        if rds_multi_az:
+            rds_size_normalized = rds_size_normalized * 2
+        if mode == "single_instance":
+            return rds_size_normalized
+        elif mode == "all_instances":
+            return rds_size_normalized * resource["DBInstanceCount"]
+        else:
+            raise Exception("Unexpected mode {}".format(mode))
+    else:
+        raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
 def process_aws_reservation_data(reservation_data):
     first_region = list(reservation_data.keys())[0]
     data_enabled = list(reservation_data[first_region].keys())
@@ -29,7 +88,13 @@ def process_aws_reservation_data(reservation_data):
     sheets = []
     for aws_service in services_enabled:
         for data_type in data_enabled:
-            headers = ["AwsRegion"]
+            headers = [
+                "AwsRegion",
+                "InstanceClass",
+                "NormalizedCapacity",
+            ]
+            if data_type == "my_reservations":
+                headers.append("NormalizedCapacityTotal")
             headers.extend(
                 list(
                     reservation_data[list(reservation_data.keys())[0]][
@@ -54,6 +119,24 @@ def process_aws_reservation_data(reservation_data):
                     for header in headers:
                         if header == "AwsRegion":
                             row.append(aws_region)
+                        elif header == "InstanceClass":
+                            row.append(
+                                get_resource_instance_class(
+                                    aws_service, aws_data
+                                )
+                            )
+                        elif header == "NormalizedCapacity":
+                            row.append(
+                                get_resource_normalized_capacity(
+                                    aws_service, aws_data,
+                                )
+                            )
+                        elif header == "NormalizedCapacityTotal":
+                            row.append(
+                                get_resource_normalized_capacity(
+                                    aws_service, aws_data, "all_instances"
+                                )
+                            )
                         elif header not in aws_data:
                             row.append("")
                         elif isinstance(
@@ -104,10 +187,12 @@ def process_aws_tagged_resources(tagged_resources):
     services_enabled = list(tagged_resources[first_region].keys())
     sheets = []
     for aws_service in services_enabled:
-        headers = ["AwsRegion"]
-        headers.extend(
-            list(tagged_resources[first_region][aws_service][0].keys())
-        )
+        headers = [
+            "TagGroup",
+            "AwsRegion",
+            "InstanceClass",
+            "NormalizedCapacity",
+        ]
         rows = []
         for aws_region in tagged_resources:
             print(
@@ -115,28 +200,57 @@ def process_aws_tagged_resources(tagged_resources):
                     aws_region=aws_region, aws_service=aws_service,
                 )
             )
-            for resource in tagged_resources[aws_region][aws_service]:
-                row = []
-                for header in headers:
-                    if header == "AwsRegion":
-                        row.append(aws_region)
-                    elif header not in resource:
-                        row.append("")
-                    elif header == "Tags":
-                        row.append(json.dumps(resource[header]))
-                    elif header == "State":
-                        row.append(resource[header]["Name"])
-                    elif isinstance(
-                        resource[header], datetime.datetime
-                    ):  # Google Sheets-friendly dates
-                        row.append(
-                            convert_to_gsheets_friendly_date(resource[header])
-                        )
-                    elif isinstance(resource[header], (dict, list)):
-                        row.append("<Object>")
-                    else:
-                        row.append(resource[header])
-                rows.append(row)
+            for tag_group_name in tagged_resources[aws_region][aws_service]:
+                if (
+                    len(
+                        tagged_resources[aws_region][aws_service][
+                            tag_group_name
+                        ]
+                    )
+                    > 0
+                ):
+                    for resource in tagged_resources[aws_region][aws_service][
+                        tag_group_name
+                    ]:
+                        if len(headers) == 4:
+                            headers.extend(list(resource.keys()))
+                        row = []
+                        for header in headers:
+                            if header == "TagGroup":
+                                row.append(tag_group_name)
+                            elif header == "AwsRegion":
+                                row.append(aws_region)
+                            elif header == "InstanceClass":
+                                row.append(
+                                    get_resource_instance_class(
+                                        aws_service, resource
+                                    )
+                                )
+                            elif header == "NormalizedCapacity":
+                                row.append(
+                                    get_resource_normalized_capacity(
+                                        aws_service, resource
+                                    )
+                                )
+                            elif header not in resource:
+                                row.append("")
+                            elif header == "Tags":
+                                row.append(json.dumps(resource[header]))
+                            elif header == "State":
+                                row.append(resource[header]["Name"])
+                            elif isinstance(
+                                resource[header], datetime.datetime,
+                            ):  # Google Sheets-friendly dates
+                                row.append(
+                                    convert_to_gsheets_friendly_date(
+                                        resource[header]
+                                    )
+                                )
+                            elif isinstance(resource[header], (dict, list),):
+                                row.append("<Object>")
+                            else:
+                                row.append(resource[header])
+                        rows.append(row)
         sheets.append(
             {
                 "sheet_name": "{}_my_instances".format(aws_service.lower()),
@@ -162,8 +276,8 @@ def main():
         tagged_resources[aws_region] = get_my_tagged_resources(
             aws_region=aws_region,
             enabled_services=config["aws"]["enabled_reports"],
-            ec2_include_tags=config["aws"]["ec2_include_tags"],
-            rds_include_tags=config["aws"]["rds_include_tags"],
+            ec2_tag_groups=config["aws"]["ec2_tag_groups"],
+            rds_tag_groups=config["aws"]["rds_tag_groups"],
         )
 
     # Get reservation data for all enabled regions
