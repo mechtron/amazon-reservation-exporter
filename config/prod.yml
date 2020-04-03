@@ -17,13 +17,13 @@
       - name: ads
         assume_role: false
       - name: sports
-        assume_role_arn: "arn:aws:iam::564061425806:role/DevOpsAdminAccess"
+        assume_role_arn: "arn:aws:iam::564061425806:role/ReservedInstancesDataLambda"
       - name: verity
-        assume_role_arn: "arn:aws:iam::000173938423:role/DevOpsAdminAccess"
+        assume_role_arn: "arn:aws:iam::000173938423:role/ReservedInstancesDataLambda"
       - name: ssai
-        assume_role_arn: "arn:aws:iam::634280838161:role/DevOpsAdminAccess"
+        assume_role_arn: "arn:aws:iam::634280838161:role/ReservedInstancesDataLambda"
       - name: sandbox
-        assume_role_arn: "arn:aws:iam::797146828779:role/DevOpsAdminAccess"
+        assume_role_arn: "arn:aws:iam::797146828779:role/ReservedInstancesDataLambda"
 
 #####
 # EC2
