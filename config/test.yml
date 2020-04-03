@@ -54,6 +54,8 @@
           - tag_name: Name
             tag_value: va-ad-server-ecs--prod
           - tag_name: Name
+            tag_value: va-ad-server-ecs--dev
+          - tag_name: Name
             tag_value: va-dynamodb-visitor-replication
 
       - name: or-adserver
@@ -195,6 +197,40 @@
         tags:
           - tag_name: Name
             tag_value: va-emr-forecasting-cluster
+          - tag_name: Name
+            tag_value: rtb-event-export-simplaex
+          - tag_name: Name
+            tag_value: Liveramp-Visitors-Integration
+          - tag_name: Name
+            tag_value: Instavails-Sample-Creation
+          - tag_name: Name
+            tag_value: Instavails-Prepare-Sample
+          - tag_name: Name
+            tag_value: Primary-Ad-Events
+          - tag_name: Name
+            tag_value: Secondary-Ad-Events
+          - tag_name: Name
+            tag_value: Primary-Images
+          - tag_name: Name
+            tag_value: Primary-In-Video
+          - tag_name: Name
+            tag_value: Primary-In-Screen-Impressions
+          - tag_name: Name
+            tag_value: Secondary-In-Screen-Impressions
+          - tag_name: Name
+            tag_value: Primary-Native-Ads
+          - tag_name: Name
+            tag_value: Secondary-Native-Ads
+          - tag_name: Name
+            tag_value: Primary-Pages
+          - tag_name: Name
+            tag_value: Secondary-Pages
+          - tag_name: Name
+            tag_value: Primary-Video
+          - tag_name: Name
+            tag_value: Secondary-Video
+          - tag_name: Name
+            tag_value: Primary-Slots
 
       - name: va-fluentd
         aws_region: us-east-1
@@ -269,7 +305,9 @@
         tags:
           - tag_name: Name
             tag_value: sports-api--prod
-                
+          - tag_name: "alpha.eksctl.io/cluster-name"
+            tag_value: cv-kubeflow
+
       - name: va-storm
         aws_region: us-east-1
         tags:
@@ -295,6 +333,7 @@
             tag_value: va-prism-kafka--stage
           - tag_name: Name
             tag_value: va-nlp-kafka--stage
+
 
 #####
 # RDS
@@ -328,6 +367,8 @@
             tag_value: databricks
           - tag_name: Name
             tag_value: databricksprod
+          - tag_name: Name
+            tag_value: gumgum-databricks-prod-worker
 
       - name: va-drone
         aws_region: us-east-1
