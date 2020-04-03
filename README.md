@@ -102,8 +102,8 @@ Exports AWS reservation data for a particular AWS account to a Google Sheet for 
       - us-east-1
       - us-west-2
 
-	accounts:
-      - name: main
+    accounts:
+      - name: prod
         assume_role: false
       - name: stage
         assume_role_arn: "arn:aws:iam::123456789123:role/ReservedInstancesDataLambda"
@@ -121,6 +121,52 @@ Exports AWS reservation data for a particular AWS account to a Google Sheet for 
         tag_name: DBName
         tag_value: va-db--prod
 ```
+
+#### Example IAM policy
+
+If you are assuming IAM roles to scrape data from additional AWS accounts, they should have at least the following permissions:
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "DescribeReservedInstances",
+            "Effect": "Allow",
+            "Action": [
+            	"ec2:DescribeInstances",
+              	"ec2:DescribeReservedInstances",
+              	"ec2:DescribeReservedInstancesOfferings",
+              	"rds:DescribeDBInstances",
+              	"rds:DescribeReservedDBInstances",
+              	"rds:DescribeReservedDBInstancesOfferings",
+              	"rds:ListTagsForResource"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+Don't forget to set the account-level trust relationship on IAM role being assumed!
+
+```
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Principal": {
+				"AWS": "arn:aws:iam::123456789456:root"
+			},
+			"Action": "sts:AssumeRole",
+			"Condition": {}
+		}
+  	]
+}
+```
+
+Where `123456789456` is the AWS account ID of the account running the Lambda function.
 
 ### Destroying environments
 
