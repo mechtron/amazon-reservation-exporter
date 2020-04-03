@@ -56,6 +56,14 @@ resource "aws_iam_role_policy" "app_permissions" {
               "rds:ListTagsForResource"
             ],
             "Resource": "*"
+        },
+        {
+            "Sid": "AssumeAccountRole",
+            "Effect": "Allow",
+            "Action": [
+              "sts:AssumeRole"
+            ],
+            "Resource": "${var.assume_role_arns}"
         }
     ]
 }

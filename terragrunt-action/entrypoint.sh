@@ -8,6 +8,7 @@ cp $GITHUB_WORKSPACE/config/$1.yml $GITHUB_WORKSPACE/exporter/config.yml
 # Set Terraform input vars
 export TF_VAR_repo_root_path=$GITHUB_WORKSPACE
 export TF_VAR_google_service_creds_json=$GOOGLE_SERVICE_CREDS_JSON
+export TF_VAR_assume_role_arns=`./extract_role_arns.py $GITHUB_WORKSPACE/exporter/config.yml`
 
 # Run Terragrunt
 cd $GITHUB_WORKSPACE/terraform/terragrunt/$1
