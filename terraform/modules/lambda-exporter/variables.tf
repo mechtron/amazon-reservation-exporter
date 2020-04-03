@@ -25,5 +25,4 @@ variable "ses_from_email" {
 
 variable "assume_role_arns" {
   description = "A list of IAM roles that the function can assume"
-  default = "[]"
 }

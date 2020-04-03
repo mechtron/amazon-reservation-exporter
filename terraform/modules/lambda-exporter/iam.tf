@@ -63,7 +63,7 @@ resource "aws_iam_role_policy" "app_permissions" {
             "Action": [
               "sts:AssumeRole"
             ],
-            "Resource": ["arn:aws:iam::564061425806:role/DevOpsAdminAccess", "arn:aws:iam::000173938423:role/DevOpsAdminAccess", "arn:aws:iam::634280838161:role/DevOpsAdminAccess", "arn:aws:iam::797146828779:role/DevOpsAdminAccess"]
+            "Resource": "${var.assume_role_arns}"
         }
     ]
 }
