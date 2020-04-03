@@ -164,6 +164,12 @@
           - tag_name: Name
             tag_value: ie-coddle
 
+      - name: va-databricks
+        aws_region: us-east-1
+        tags:
+          - tag_name: Name
+            tag_value: gumgum-databricks-prod-worker
+
       - name: va-druid
         aws_region: us-east-1
         tags:
@@ -211,6 +217,8 @@
             tag_value: Secondary-Ad-Events
           - tag_name: Name
             tag_value: Primary-Images
+          - tag_name: Name
+            tag_value: Secondary-Images
           - tag_name: Name
             tag_value: Primary-In-Video
           - tag_name: Name
@@ -367,8 +375,6 @@
             tag_value: databricks
           - tag_name: Name
             tag_value: databricksprod
-          - tag_name: Name
-            tag_value: gumgum-databricks-prod-worker
 
       - name: va-drone
         aws_region: us-east-1
