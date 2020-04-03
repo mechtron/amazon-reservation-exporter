@@ -63,7 +63,7 @@ resource "aws_iam_role_policy" "app_permissions" {
             "Action": [
               "sts:AssumeRole"
             ],
-            "Resource": "${var.assume_role_arns}"
+            "Resource": ${var.assume_role_arns}
         }
     ]
 }

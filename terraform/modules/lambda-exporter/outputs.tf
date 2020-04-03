@@ -9,3 +9,7 @@ output "lambda_source_code_hash" {
 output "lambda_last_modified" {
   value = "${aws_lambda_function.lambda_function.last_modified}"
 }
+
+output "test_assume_role_arns" {
+  value = "${var.assume_role_arns}"
+}
