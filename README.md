@@ -78,8 +78,9 @@ Exports AWS reservation data for a particular AWS account to a Google Sheet for 
 	| Parameter | Description | Allowed values |
 	| :----: | :----: | :----: |
 	| `google_sheets.sheet_name` | Name of the Google Sheet from the previous step | `String` |
-	| `aws.regions[]` | List of AWS regions to scrape data for | `List` |
 	| `aws.enabled_reports[]` | List of enabled reports. Supported options: `ec2`, `rds` | `List` |
+	| `aws.regions[]` | List of AWS regions to scrape data for | `List` |
+	| `aws.accounts[]` | List of AWS accounts to scrape data for | `List` |
 	| `aws.ec2_tag_groups[]` | List of EC2 instance tags to scrape data for | `List` |
 	| `aws.rds_tag_groups[]` | List of RDS instance tags to scrape data for | `List` |
 
@@ -93,13 +94,19 @@ Exports AWS reservation data for a particular AWS account to a Google Sheet for 
     sheet_name: Reserved Instances Analyzer
   
   aws:
+    enabled_reports:
+      - ec2
+      - rds
+
     regions:
       - us-east-1
       - us-west-2
 
-    enabled_reports:
-      - ec2
-      - rds
+	accounts:
+      - name: main
+        assume_role: false
+      - name: stage
+        assume_role_arn: "arn:aws:iam::123456789123:role/ReservedInstancesDataLambda"
 
     ec2_tag_groups:
       - aws_region: us-east-1

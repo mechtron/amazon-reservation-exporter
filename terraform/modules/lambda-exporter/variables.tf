@@ -22,3 +22,8 @@ variable "google_service_creds_json" {
 variable "ses_from_email" {
   description = "The from: email address to send email alerts to"
 }
+
+variable "assume_role_arns" {
+  description = "A list of IAM roles that the function can assume"
+  default = "[]"
+}

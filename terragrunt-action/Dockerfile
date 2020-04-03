@@ -10,6 +10,9 @@ RUN pip install --upgrade awscli
 ADD https://github.com/gruntwork-io/terragrunt/releases/download/v$TERRAGRUNT_VERSION/terragrunt_linux_386 /bin/terragrunt
 RUN chmod +x /bin/terragrunt
 
+RUN pip3 install PyYAML==5.1
+COPY extract_role_arns.py /extract_role_arns.py
+
 COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
