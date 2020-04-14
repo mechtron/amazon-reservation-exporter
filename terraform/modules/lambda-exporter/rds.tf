@@ -1,5 +1,5 @@
 resource "aws_security_group" "db" {
-  name   = local.name
+  name   = "${local.name}-rds"
   vpc_id = var.vpc_id
 
   ingress {

@@ -9,7 +9,7 @@ data "archive_file" "lambda_zip" {
 }
 
 resource "aws_security_group" "lambda_function" {
-  name   = local.name
+  name   = "${local.name}-lambda"
   vpc_id = var.vpc_id
   egress {
     from_port   = 0
