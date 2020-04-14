@@ -35,6 +35,7 @@ resource "random_string" "db_password" {
 }
 
 resource "aws_db_instance" "default" {
+  identifier             = local.name
   allocated_storage      = 20
   storage_type           = "gp2"
   engine                 = "postgres"
