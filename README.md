@@ -39,11 +39,14 @@ Exports AWS reservation data for a particular AWS account to a Google Sheet for 
 					"acm:*",
 					"cloudwatch:*",
 					"dynamodb:*"
+					"ec2:*",
 					"events:*",
 					"iam:*",
 					"lambda:*",
 					"logs:*",
-					"s3:*"
+					"rds:*",
+					"s3:*",
+					"vpc:*"
 				],
 				"Resource": "*"
 			}
