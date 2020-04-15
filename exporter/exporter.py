@@ -13,6 +13,7 @@ from aws import (
     get_my_reservation_data,
     get_my_tagged_resources,
 )
+from db import setup_database
 from gsheets import (
     build_range,
     convert_to_gsheets_friendly_date,
@@ -280,44 +281,46 @@ def load_config():
 def main():
     config = load_config()
 
-    # Look-up per-service usage
-    tagged_resources = {}
-    for aws_region in config["aws"]["regions"]:
-        tagged_resources[aws_region] = get_my_tagged_resources(
-            aws_region=aws_region,
-            accounts=config["aws"]["accounts"],
-            enabled_services=config["aws"]["enabled_reports"],
-            ec2_tag_groups=config["aws"]["ec2_tag_groups"],
-            rds_tag_groups=config["aws"]["rds_tag_groups"],
-        )
+    setup_database()
 
-    # Get reservation data for all enabled regions
-    reservation_data = {}
-    for aws_region in config["aws"]["regions"]:
-        reservation_data[aws_region] = get_my_reservation_data(
-            aws_region,
-            config["aws"]["accounts"],
-            config["aws"]["enabled_reports"],
-        )
+    # # Look-up per-service usage
+    # tagged_resources = {}
+    # for aws_region in config["aws"]["regions"]:
+    #     tagged_resources[aws_region] = get_my_tagged_resources(
+    #         aws_region=aws_region,
+    #         accounts=config["aws"]["accounts"],
+    #         enabled_services=config["aws"]["enabled_reports"],
+    #         ec2_tag_groups=config["aws"]["ec2_tag_groups"],
+    #         rds_tag_groups=config["aws"]["rds_tag_groups"],
+    #     )
 
-    # Process data into sheets
-    sheets = process_aws_tagged_resources(tagged_resources)
-    sheets.extend(process_aws_reservation_data(reservation_data))
+    # # Get reservation data for all enabled regions
+    # reservation_data = {}
+    # for aws_region in config["aws"]["regions"]:
+    #     reservation_data[aws_region] = get_my_reservation_data(
+    #         aws_region,
+    #         config["aws"]["accounts"],
+    #         config["aws"]["enabled_reports"],
+    #     )
 
-    # Update Google Sheets
-    google_sheet = GoogleSheet(config["google_sheets"]["sheet_name"])
-    for sheet in sheets:
-        if len(sheet["rows"]) > 0:
-            print("Updating sheet with name {}".format(sheet["sheet_name"]))
-            google_sheet.change_sheet_tab(sheet["sheet_name"])
-            google_sheet.write_header_row(sheet["headers"])
-            google_sheet.wipe_data_rows(sheet["headers"])
-            google_sheet.update_cells(sheet["rows"])
-    print(
-        'Google Sheet "{}" successfully updated!'.format(
-            config["google_sheets"]["sheet_name"]
-        )
-    )
+    # # Process data into sheets
+    # sheets = process_aws_tagged_resources(tagged_resources)
+    # sheets.extend(process_aws_reservation_data(reservation_data))
+
+    # # Update Google Sheets
+    # google_sheet = GoogleSheet(config["google_sheets"]["sheet_name"])
+    # for sheet in sheets:
+    #     if len(sheet["rows"]) > 0:
+    #         print("Updating sheet with name {}".format(sheet["sheet_name"]))
+    #         google_sheet.change_sheet_tab(sheet["sheet_name"])
+    #         google_sheet.write_header_row(sheet["headers"])
+    #         google_sheet.wipe_data_rows(sheet["headers"])
+    #         google_sheet.update_cells(sheet["rows"])
+    # print(
+    #     'Google Sheet "{}" successfully updated!'.format(
+    #         config["google_sheets"]["sheet_name"]
+    #     )
+    # )
 
 
 def handler(event, context):
