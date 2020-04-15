@@ -17,6 +17,7 @@ def setup_database():
             user=DATABASE_USERNAME,
             password=DATABASE_PASSWORD,
             database=DATABASE_NAME,
+            connect_timeout=10,
         )
         cursor = connection.cursor()
         print(connection.get_dsn_parameters(), "\n")
