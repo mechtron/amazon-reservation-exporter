@@ -13,7 +13,7 @@ from aws import (
     get_my_reservation_data,
     get_my_tagged_resources,
 )
-from db import setup_database
+from db_test import test_data_insert
 from gsheets import (
     build_range,
     convert_to_gsheets_friendly_date,
@@ -281,7 +281,7 @@ def load_config():
 def main():
     config = load_config()
 
-    setup_database()
+    test_data_insert()
 
     # # Look-up per-service usage
     # tagged_resources = {}
