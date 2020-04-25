@@ -6,7 +6,7 @@ resource "aws_security_group" "db" {
     from_port = 5432
     to_port   = 5432
     protocol  = "TCP"
-    security_groups = [aws_security_group.lambda_function.id]
+    security_groups = concat([aws_security_group.lambda_function.id], var.db_additional_sgs_to_trust)
   }
 
   egress {

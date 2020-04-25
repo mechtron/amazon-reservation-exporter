@@ -36,3 +36,9 @@ variable "subnet_ids" {
   description = "ID of the subnets to include in the database's subnet group in"
   type = list(string)
 }
+
+variable "db_additional_sgs_to_trust" {
+  description = "A list of additional security group IDs for the database to trust"
+  type = list(string)
+  default = []
+}
