@@ -163,7 +163,23 @@ def get_my_tagged_resources(**kwargs):
     return tagged_resources
 
 
-def get_my_reservation_data(aws_region, accounts, enabled_services):
+# def get_my_reservation_data(aws_region, accounts, enabled_services):
+#     my_reservations = dict(ec2=[], rds=[])
+#     for account in accounts:
+#         aws_client = AwsClient(aws_region, account)
+#         if "ec2" in enabled_services:
+#             my_reservations["ec2"].extend(aws_client.get_my_ec2_reservations())
+#         if "rds" in enabled_services:
+#             my_reservations["rds"].extend(aws_client.get_my_rds_reservations())
+#     return {
+#         "my_reservations": my_reservations,
+#         "reservation_offerings": get_reservation_offerings(
+#             aws_region, enabled_services
+#         ),
+#     }
+
+
+def get_my_reservations(aws_region, accounts, enabled_services):
     my_reservations = dict(ec2=[], rds=[])
     for account in accounts:
         aws_client = AwsClient(aws_region, account)
@@ -171,12 +187,7 @@ def get_my_reservation_data(aws_region, accounts, enabled_services):
             my_reservations["ec2"].extend(aws_client.get_my_ec2_reservations())
         if "rds" in enabled_services:
             my_reservations["rds"].extend(aws_client.get_my_rds_reservations())
-    return {
-        "my_reservations": my_reservations,
-        "reservation_offerings": get_reservation_offerings(
-            aws_region, enabled_services
-        ),
-    }
+    return my_reservations
 
 
 def get_reservation_offerings(aws_region, enabled_services):

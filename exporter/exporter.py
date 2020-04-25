@@ -10,15 +10,10 @@ import time
 import yaml
 
 from aws import (
-    get_my_reservation_data,
+    get_my_reservations,
     get_my_tagged_resources,
 )
-from db_test import test_data_insert
-from gsheets import (
-    build_range,
-    convert_to_gsheets_friendly_date,
-    GoogleSheet,
-)
+from db_test import test_data_insert, insert_reservation_data
 
 
 def get_resource_instance_class(aws_service, resource):
@@ -80,117 +75,136 @@ def get_resource_normalized_capacity(
         raise Exception("Unexpected aws_service {}".format(aws_service))
 
 
-def get_reservation_data_headers(reservation_data, aws_service, data_type):
-    headers = [
-        "AwsRegion",
-        "InstanceClass",
-        "NormalizedCapacity",
-    ]
-    if data_type == "my_reservations":
-        headers.append("NormalizedCapacityTotal")
-    for aws_region in reservation_data:
-        if len(reservation_data[aws_region][data_type][aws_service]) > 0:
-            headers.extend(
-                list(
-                    reservation_data[aws_region][data_type][aws_service][
-                        0
-                    ].keys()
-                )
-            )
-            return headers
-    return headers
+def get_reservation_id(aws_service, aws_data):
+    if aws_service == "ec2":
+        return aws_data["ReservedInstancesId"]
+    if aws_service == "rds":
+        return aws_data["ReservedDBInstancesOfferingId"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_reservation_instance_count(aws_service, aws_data):
+    if aws_service == "ec2":
+        return aws_data["InstanceCount"]
+    if aws_service == "rds":
+        return aws_data["DBInstanceCount"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_reservation_type(aws_service, aws_data):
+    if aws_service == "ec2":
+        return aws_data["InstanceType"]
+    if aws_service == "rds":
+        return aws_data["OfferingType"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_reservation_multi_az(aws_service, aws_data):
+    if aws_service == "ec2":
+        return False
+    if aws_service == "rds":
+        return aws_data["MultiAZ"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_reservation_start_date(aws_service, aws_data):
+    if aws_service == "ec2":
+        return aws_data["Start"]
+    if aws_service == "rds":
+        return aws_data["StartTime"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_reservation_end_date(aws_service, aws_data):
+    if aws_service == "ec2":
+        return aws_data["End"]
+    if aws_service == "rds":
+        return None
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_reservation_recurring_charges(aws_data):
+    if len(aws_data["RecurringCharges"]) == 0:
+        return 0
+    if "Amount" in aws_data["RecurringCharges"][0]:
+        return aws_data["RecurringCharges"][0]["Amount"]
+    if (
+        "RecurringChargeAmount"
+        in aws_data["RecurringCharges"][0]
+    ):
+        return aws_data["RecurringCharges"][0]["RecurringChargeAmount"]
+    return 0
 
 
 def process_aws_reservation_data(reservation_data):
     first_region = list(reservation_data.keys())[0]
-    data_enabled = list(reservation_data[first_region].keys())
     services_enabled = list(
-        reservation_data[first_region][data_enabled[0]].keys()
+        reservation_data[first_region].keys()
     )
-    sheets = []
+    reservations = {}
     for aws_service in services_enabled:
-        for data_type in data_enabled:
-            headers = get_reservation_data_headers(
-                reservation_data, aws_service, data_type
-            )
-            rows = []
-            for aws_region in reservation_data:
-                print(
-                    "Processing data for {aws_region} "
-                    "{data_type} {aws_service}..".format(
-                        aws_region=aws_region,
-                        data_type=data_type,
-                        aws_service=aws_service,
-                    )
+        for aws_region in reservation_data:
+            print(
+                "Processing data for {aws_region} {aws_service}..".format(
+                    aws_region=aws_region,
+                    aws_service=aws_service,
                 )
-                for aws_data in reservation_data[aws_region][data_type][
-                    aws_service
-                ]:
-                    row = []
-                    for header in headers:
-                        if header == "AwsRegion":
-                            row.append(aws_region)
-                        elif header == "InstanceClass":
-                            row.append(
-                                get_resource_instance_class(
-                                    aws_service, aws_data
-                                )
-                            )
-                        elif header == "NormalizedCapacity":
-                            row.append(
-                                get_resource_normalized_capacity(
-                                    aws_service, aws_data,
-                                )
-                            )
-                        elif header == "NormalizedCapacityTotal":
-                            row.append(
-                                get_resource_normalized_capacity(
-                                    aws_service, aws_data, "all_instances"
-                                )
-                            )
-                        elif header not in aws_data:
-                            row.append("")
-                        elif isinstance(
-                            aws_data[header], datetime.datetime
-                        ):  # Google Sheets-friendly dates
-                            row.append(
-                                convert_to_gsheets_friendly_date(
-                                    aws_data[header]
-                                )
-                            )
-                        elif header == "RecurringCharges":
-                            if len(aws_data["RecurringCharges"]) == 0:
-                                row.append("")
-                            elif "Amount" in aws_data["RecurringCharges"][0]:
-                                row.append(
-                                    aws_data["RecurringCharges"][0]["Amount"]
-                                )
-                            elif (
-                                "RecurringChargeAmount"
-                                in aws_data["RecurringCharges"][0]
-                            ):
-                                row.append(
-                                    aws_data["RecurringCharges"][0][
-                                        "RecurringChargeAmount"
-                                    ]
-                                )
-                            else:
-                                row.append("")
-                        elif isinstance(aws_data[header], (dict, list)):
-                            row.append(json.dumps(aws_data[header]))
-                        else:
-                            row.append(aws_data[header])
-                    rows.append(row)
-            sheets.append(
-                {
-                    "sheet_name": "{}_{}".format(
-                        aws_service.lower(), data_type
-                    ),
-                    "headers": headers,
-                    "rows": rows,
-                }
             )
-    return sheets
+            for aws_data in reservation_data[aws_region][aws_service]:
+                reservation_id = get_reservation_id(aws_service, aws_data)
+                instance_count = get_reservation_instance_count(
+                    aws_service,
+                    aws_data,
+                )
+                instance_class = get_resource_instance_class(
+                    aws_service,
+                    aws_data,
+                )
+                res_type = get_reservation_type(aws_service, aws_data)
+                multi_az = get_reservation_multi_az(aws_service, aws_data)
+                start = get_reservation_start_date(aws_service, aws_data)
+                end = get_reservation_end_date(aws_service, aws_data)
+                normalized_capacity_each = get_resource_normalized_capacity(
+                    aws_service,
+                    aws_data,
+                )
+                normalized_capacity_total = get_resource_normalized_capacity(
+                    aws_service,
+                    aws_data, 
+                    "all_instances",
+                )
+                recurring_charges = get_reservation_recurring_charges(aws_data)
+
+                # Default to empty strings when DNE
+                availability_zone = aws_data["AvailabilityZone"] if "AvailabilityZone" in aws_data else ""
+                scope = aws_data["Scope"] if "Scope" in aws_data else ""
+                offering_class = aws_data["OfferingClass"] if "OfferingClass" in aws_data else ""
+
+                reservations[reservation_id] = dict(
+                    service=aws_service,
+                    state=aws_data["State"],
+                    region=aws_region,
+                    availability_zone=availability_zone,
+                    scope=scope,
+                    account_name=aws_data["AccountName"],
+                    count=instance_count,
+                    instance_class=instance_class,
+                    normalized_capacity_each=normalized_capacity_each,
+                    normalized_capacity_total=normalized_capacity_total,
+                    type=res_type,
+                    description=aws_data["ProductDescription"],
+                    multi_az=multi_az,
+                    duration=aws_data["Duration"],
+                    start=start,
+                    end=end,
+                    fixed_price=aws_data["FixedPrice"],
+                    usage_price=aws_data["UsagePrice"],
+                    recurring_charges=recurring_charges,
+                    offering_class=offering_class,
+                    offering_type=aws_data["OfferingType"],
+                )
+
+    return reservations
 
 
 def process_aws_tagged_resources(tagged_resources):
@@ -281,7 +295,7 @@ def load_config():
 def main():
     config = load_config()
 
-    test_data_insert()
+    # test_data_insert()
 
     # # Look-up per-service usage
     # tagged_resources = {}
@@ -294,14 +308,14 @@ def main():
     #         rds_tag_groups=config["aws"]["rds_tag_groups"],
     #     )
 
-    # # Get reservation data for all enabled regions
-    # reservation_data = {}
-    # for aws_region in config["aws"]["regions"]:
-    #     reservation_data[aws_region] = get_my_reservation_data(
-    #         aws_region,
-    #         config["aws"]["accounts"],
-    #         config["aws"]["enabled_reports"],
-    #     )
+    # Get reservation data for all enabled regions
+    reservation_data = {}
+    for aws_region in config["aws"]["regions"]:
+        reservation_data[aws_region] = get_my_reservations(
+            aws_region,
+            config["aws"]["accounts"],
+            config["aws"]["enabled_reports"],
+        )
 
     # # Process data into sheets
     # sheets = process_aws_tagged_resources(tagged_resources)
@@ -322,6 +336,11 @@ def main():
     #     )
     # )
 
+    # Process data
+    processed_data = process_aws_reservation_data(reservation_data)\
+
+    # Persist reservation data to Postgres
+    insert_reservation_data(processed_data)
 
 def handler(event, context):
     main()
