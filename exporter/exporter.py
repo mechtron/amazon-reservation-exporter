@@ -79,7 +79,7 @@ def get_reservation_id(aws_service, aws_data):
     if aws_service == "ec2":
         return aws_data["ReservedInstancesId"]
     if aws_service == "rds":
-        return aws_data["ReservedDBInstancesOfferingId"]
+        return aws_data["ReservedDBInstanceId"]
     raise Exception("Unexpected aws_service {}".format(aws_service))
 
 
