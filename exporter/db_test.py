@@ -57,25 +57,21 @@ def test_data_insert():
     session.add(dwayne_stuntman)
     session.add(mark_stuntman)
 
-    # Cmmit and close session
+    # Commit and close session
     session.commit()
     session.close()
 
 
-def insert_reservation_data(processed_reservation_data):
-    # Generate database schema
+def upsert_reservation_data(processed_reservation_data):
+    print("Generating database schema..")
     Base.metadata.create_all(engine)
-
-    # Create a new session
+    print("Creating database session..")
     session = Session()
-
-    # Create and persist reservations
+    print("Creating and persisting reservation data..")
     for res_id in processed_reservation_data:
-
         processed_reservation_data[res_id]["id"] = res_id
-
         reservation = Reservation(
-            id=res_id,
+            id=processed_reservation_data[res_id]["id"],
             service=processed_reservation_data[res_id]["service"],
             state=processed_reservation_data[res_id]["state"],
             region=processed_reservation_data[res_id]["region"],
@@ -98,11 +94,18 @@ def insert_reservation_data(processed_reservation_data):
             offering_class=processed_reservation_data[res_id]["offering_class"],
             offering_type=processed_reservation_data[res_id]["offering_type"],
         )
-
         # reservation = Reservation(processed_reservation_data[res_id])
-
         session.add(reservation)
-
-    # Cmmit and close session
+    print("Commit and close database session..")
     session.commit()
     session.close()
+    print("Reservation data successfully updated.")
+
+
+def get_reservation_data():
+    print("Creating database session..")
+    session = Session()
+    print("Looking up reservation data..")
+    reservation_data = session.query(Reservation).all()
+    print("Reservation data successfully retrieved.")
+    return reservation_data

@@ -13,7 +13,11 @@ from aws import (
     get_my_reservations,
     get_my_tagged_resources,
 )
-from db_test import test_data_insert, insert_reservation_data
+from db_test import (
+    get_reservation_data,
+    test_data_insert,
+    upsert_reservation_data,
+)
 
 
 def get_resource_instance_class(aws_service, resource):
@@ -317,30 +321,17 @@ def main():
             config["aws"]["enabled_reports"],
         )
 
-    # # Process data into sheets
-    # sheets = process_aws_tagged_resources(tagged_resources)
-    # sheets.extend(process_aws_reservation_data(reservation_data))
-
-    # # Update Google Sheets
-    # google_sheet = GoogleSheet(config["google_sheets"]["sheet_name"])
-    # for sheet in sheets:
-    #     if len(sheet["rows"]) > 0:
-    #         print("Updating sheet with name {}".format(sheet["sheet_name"]))
-    #         google_sheet.change_sheet_tab(sheet["sheet_name"])
-    #         google_sheet.write_header_row(sheet["headers"])
-    #         google_sheet.wipe_data_rows(sheet["headers"])
-    #         google_sheet.update_cells(sheet["rows"])
-    # print(
-    #     'Google Sheet "{}" successfully updated!'.format(
-    #         config["google_sheets"]["sheet_name"]
-    #     )
-    # )
-
     # Process data
-    processed_data = process_aws_reservation_data(reservation_data)\
+    processed_data = process_aws_reservation_data(reservation_data)
 
     # Persist reservation data to Postgres
-    insert_reservation_data(processed_data)
+    upsert_reservation_data(processed_data)
+
+    # Retrieve reservation data from Postgres
+    reservation_data_new = get_reservation_data()
+    for reservation in reservation_data_new:
+        print("Reservation found: {}".format(reservation.id))
+
 
 def handler(event, context):
     main()
