@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from sqlalchemy import Boolean, Column, String, Integer, Float, Date
+from sqlalchemy import Boolean, Column, String, Integer, Float, DateTime
 
 from db_base import Base
 
@@ -23,8 +23,8 @@ class Reservation(Base):
     description = Column(String)
     multi_az = Column(Boolean)
     duration = Column(Integer)
-    start = Column(Date)
-    end = Column(Date)
+    start = Column(DateTime)
+    end = Column(DateTime)
     fixed_price = Column(Float)
     usage_price = Column(Float)
     recurring_charges = Column(Float)

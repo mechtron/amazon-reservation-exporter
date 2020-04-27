@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from sqlalchemy import Boolean, Column, String, Integer, Float, Date
+from sqlalchemy import Boolean, Column, String, Integer, Float, DateTime
 
 from db_base import Base
 
@@ -14,12 +14,12 @@ class Resource(Base):
     service = Column(String)
     region = Column(String)
     availability_zone = Column(String)
-    last_seen = Column(Date)
+    last_seen = Column(DateTime)
     state = Column(String)
     normalized_capacity = Column(Integer)
     image_id = Column(String)
     instance_type = Column(String)
-    launch_time = Column(Date)
+    launch_time = Column(DateTime)
     private_ip_address = Column(String)
     public_ip_address = Column(String)
     state = Column(String)
