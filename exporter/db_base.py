@@ -23,3 +23,8 @@ engine = create_engine(
 )
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
+
+
+def generate_database_schema():
+    print("Generating database schema..")
+    Base.metadata.create_all(engine)

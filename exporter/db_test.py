@@ -11,9 +11,6 @@ from db_reservations import Reservation
 
 
 def test_data_insert():
-    # Generate database schema
-    Base.metadata.create_all(engine)
-
     # Create a new session
     session = Session()
 
@@ -63,8 +60,6 @@ def test_data_insert():
 
 
 def upsert_reservation_data(processed_reservation_data):
-    print("Generating database schema..")
-    Base.metadata.create_all(engine)
     print("Creating database session..")
     session = Session()
     print("Creating database objects..")

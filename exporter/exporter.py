@@ -13,6 +13,7 @@ from aws import (
     get_my_reservations,
     get_my_tagged_resources,
 )
+from db_base import generate_database_schema
 from db_test import (
     get_reservation_data,
     test_data_insert,
@@ -299,6 +300,8 @@ def load_config():
 
 def main():
     config = load_config()
+
+    generate_database_schema()
 
     # test_data_insert()
 
