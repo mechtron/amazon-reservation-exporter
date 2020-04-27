@@ -181,9 +181,22 @@ NOTE: the environment selected will be based on the branch (`master` branch corr
 
 Commits made to branches other than `master` automatically update the `test` environment with that branch's changes. But before you use the `test` environment, you must update the `test` environment's config using the procedure outlined above in *Update prod environment config*.
 
-### Create a new environment
+## FAQ
 
-Creating new environments is easy:
+### Changing database schema
+
+Want to make a change to one of the table schemas? No problem, we've automated that process with [alembic](https://github.com/sqlalchemy/alembic):
+
+1. Make your changes to the SQLAlchemy models in `db_reservations.py` or `db_resources.py`
+1. Install `alembic`: `pip install alembic`
+1. Change to the project's `exporter` sub-directory: `cd exporter`
+1. Initialize `alembic`: `alembic init alembic`
+1. Create the schema migration: `alembic revision --autogenerate -m "Describe change"`
+1. Apply the migration: `alembic upgrade head`
+
+### Create a new Terragrunt environment
+
+Creating new Terraform environments is easy:
 
 1. Pick a name for your environment (example: `API`, `dev`, `QA`)
 1. Copy the `prod` environment's Terragrunt values from `terraform/terragrunt/prod/terragrunt.hcl` to `terraform/terragrunt/<your_environment_name>/terragrunt.hcl` and update the following values:
@@ -204,7 +217,7 @@ Creating new environments is easy:
 	```
 1. Create and check-out your new environment's branch. Commit your changes from the previous step - your new environment will be automatically created by GitHub Actions.
 
-## AWS infrastructure
+### AWS infrastructure
 
 #### Resources
 
