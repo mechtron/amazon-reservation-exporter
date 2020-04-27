@@ -55,3 +55,4 @@ class Reservation(Base):
         self.recurring_charges = kwargs["recurring_charges"]
         self.offering_class = kwargs["offering_class"]
         self.offering_type = kwargs["offering_type"]
+

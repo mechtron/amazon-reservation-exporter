@@ -185,6 +185,7 @@ def process_aws_reservation_data(reservation_data):
                 offering_class = aws_data["OfferingClass"] if "OfferingClass" in aws_data else ""
 
                 reservations[reservation_id] = dict(
+                    id=reservation_id,
                     service=aws_service,
                     state=aws_data["State"],
                     region=aws_region,

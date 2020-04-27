@@ -67,39 +67,20 @@ def upsert_reservation_data(processed_reservation_data):
     Base.metadata.create_all(engine)
     print("Creating database session..")
     session = Session()
-    print("Creating and persisting reservation data..")
-    for res_id in processed_reservation_data:
-        processed_reservation_data[res_id]["id"] = res_id
-        reservation = Reservation(
-            id=processed_reservation_data[res_id]["id"],
-            service=processed_reservation_data[res_id]["service"],
-            state=processed_reservation_data[res_id]["state"],
-            region=processed_reservation_data[res_id]["region"],
-            availability_zone=processed_reservation_data[res_id]["availability_zone"],
-            scope=processed_reservation_data[res_id]["scope"],
-            account_name=processed_reservation_data[res_id]["account_name"],
-            count=processed_reservation_data[res_id]["count"],
-            instance_class=processed_reservation_data[res_id]["instance_class"],
-            normalized_capacity_each=processed_reservation_data[res_id]["normalized_capacity_each"],
-            normalized_capacity_total=processed_reservation_data[res_id]["normalized_capacity_total"],
-            type=processed_reservation_data[res_id]["type"],
-            description=processed_reservation_data[res_id]["description"],
-            multi_az=processed_reservation_data[res_id]["multi_az"],
-            duration=processed_reservation_data[res_id]["duration"],
-            start=processed_reservation_data[res_id]["start"],
-            end=processed_reservation_data[res_id]["end"],
-            fixed_price=processed_reservation_data[res_id]["fixed_price"],
-            usage_price=processed_reservation_data[res_id]["usage_price"],
-            recurring_charges=processed_reservation_data[res_id]["recurring_charges"],
-            offering_class=processed_reservation_data[res_id]["offering_class"],
-            offering_type=processed_reservation_data[res_id]["offering_type"],
-        )
-        # reservation = Reservation(processed_reservation_data[res_id])
-        session.add(reservation)
+    print("Creating database objects..")
+    reservation_objects = {}
+    for ri_id in processed_reservation_data:
+        reservation_objects[ri_id] = Reservation(**processed_reservation_data[ri_id])
+    print("Updating existing reservation data..")
+    for reservation in session.query(Reservation).filter(
+        Reservation.id.in_(processed_reservation_data.keys())
+    ).all():
+        session.merge(reservation_objects.pop(reservation.id))
+    print("Creating new reservation data..")
+    session.add_all(reservation_objects.values())
     print("Commit and close database session..")
     session.commit()
     session.close()
-    print("Reservation data successfully updated.")
 
 
 def get_reservation_data():
@@ -107,5 +88,6 @@ def get_reservation_data():
     session = Session()
     print("Looking up reservation data..")
     reservation_data = session.query(Reservation).all()
+    session.close()
     print("Reservation data successfully retrieved.")
     return reservation_data
