@@ -8,6 +8,7 @@ from db_contact_details import ContactDetails
 from db_movie import Movie
 from db_stuntman import Stuntman
 from db_reservations import Reservation
+from db_resources import Resource
 
 
 def test_data_insert():
@@ -55,6 +56,25 @@ def test_data_insert():
     session.add(mark_stuntman)
 
     # Commit and close session
+    session.commit()
+    session.close()
+
+
+def upsert_tagged_resources_data(processed_tagged_resources_data):
+    print("Creating database session..")
+    session = Session()
+    print("Creating resource objects..")
+    resource_objects = {}
+    for r_id in processed_tagged_resources_data:
+        resource_objects[r_id] = Resource(**processed_tagged_resources_data[r_id])
+    print("Updating existing resource data..")
+    for resource in session.query(Resource).filter(
+        Resource.id.in_(processed_tagged_resources_data.keys())
+    ).all():
+        session.merge(resource_objects.pop(resource.id))
+    print("Creating new resource data..")
+    session.add_all(resource_objects.values())
+    print("Commit and close database session..")
     session.commit()
     session.close()
 

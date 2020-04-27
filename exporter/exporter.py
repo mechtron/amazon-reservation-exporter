@@ -18,6 +18,7 @@ from db_test import (
     get_reservation_data,
     test_data_insert,
     upsert_reservation_data,
+    upsert_tagged_resources_data,
 )
 
 
@@ -88,6 +89,25 @@ def get_reservation_id(aws_service, aws_data):
     raise Exception("Unexpected aws_service {}".format(aws_service))
 
 
+def get_reservation_az(aws_service, aws_data):
+    if aws_service == "ec2":
+        if "AvailabilityZone" in aws_data:
+            return aws_data["AvailabilityZone"]
+        else:
+            return None
+    if aws_service == "rds":
+        return None
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_reservation_scope(aws_service, aws_data):
+    if aws_service == "ec2":
+        return aws_data["Scope"]
+    if aws_service == "rds":
+        return None
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
 def get_reservation_instance_count(aws_service, aws_data):
     if aws_service == "ec2":
         return aws_data["InstanceCount"]
@@ -141,6 +161,14 @@ def get_reservation_recurring_charges(aws_data):
     return 0
 
 
+def get_reservation_offering_class(aws_service, aws_data):
+    if aws_service == "ec2":
+        return aws_data["OfferingClass"]
+    if aws_service == "rds":
+        return None
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
 def process_aws_reservation_data(reservation_data):
     first_region = list(reservation_data.keys())[0]
     services_enabled = list(
@@ -157,6 +185,11 @@ def process_aws_reservation_data(reservation_data):
             )
             for aws_data in reservation_data[aws_region][aws_service]:
                 reservation_id = get_reservation_id(aws_service, aws_data)
+                availability_zone = get_reservation_az(
+                    aws_service,
+                    aws_data,
+                )
+                scope = get_reservation_scope(aws_service,aws_data)
                 instance_count = get_reservation_instance_count(
                     aws_service,
                     aws_data,
@@ -179,12 +212,10 @@ def process_aws_reservation_data(reservation_data):
                     "all_instances",
                 )
                 recurring_charges = get_reservation_recurring_charges(aws_data)
-
-                # Default to empty strings when DNE
-                availability_zone = aws_data["AvailabilityZone"] if "AvailabilityZone" in aws_data else ""
-                scope = aws_data["Scope"] if "Scope" in aws_data else ""
-                offering_class = aws_data["OfferingClass"] if "OfferingClass" in aws_data else ""
-
+                offering_class = get_reservation_offering_class(
+                    aws_service,
+                    aws_data,
+                )
                 reservations[reservation_id] = dict(
                     id=reservation_id,
                     service=aws_service,
@@ -213,18 +244,148 @@ def process_aws_reservation_data(reservation_data):
     return reservations
 
 
+def get_resource_id(aws_service, resource):
+    if aws_service == "ec2":
+        return resource["InstanceId"]
+    if aws_service == "rds":
+        return resource["DBInstanceIdentifier"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_availability_zone(aws_service, resource):
+    if aws_service == "ec2":
+        return resource["Placement"]["AvailabilityZone"]
+    if aws_service == "rds":
+        return resource["AvailabilityZone"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_image_id(aws_service, resource):
+    if aws_service == "ec2":
+        return resource["ImageId"]
+    if aws_service == "rds":
+        return None
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_instance_type(aws_service, resource):
+    if aws_service == "ec2":
+        return resource["InstanceType"]
+    if aws_service == "rds":
+        return resource["DBInstanceClass"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_launch_time(aws_service, resource):
+    if aws_service == "ec2":
+        return resource["LaunchTime"]
+    if aws_service == "rds":
+        return resource["InstanceCreateTime"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_ip(aws_service, resource, type="private"):
+    if aws_service == "ec2":
+        if type == "private":
+            return resource["PrivateIpAddress"]
+        elif type == "public":
+            if "PublicIpAddress" in resource:
+                return resource["PublicIpAddress"]
+            else:
+                return None
+    if aws_service == "rds":
+        return None
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_state(aws_service, resource):
+    if aws_service == "ec2":
+        return resource["State"]["Name"]
+    if aws_service == "rds":
+        return resource["DBInstanceStatus"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_subnet_id(aws_service, resource):
+    if aws_service == "ec2":
+        return resource["SubnetId"]
+    if aws_service == "rds":
+        return resource["DBSubnetGroup"]["DBSubnetGroupName"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_vpc_id(aws_service, resource):
+    if aws_service == "ec2":
+        return resource["VpcId"]
+    if aws_service == "rds":
+        return resource["DBSubnetGroup"]["VpcId"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_architecture(aws_service, resource):
+    if aws_service == "ec2":
+        return resource["Architecture"]
+    if aws_service == "rds":
+        return None
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_hypervisor(aws_service, resource):
+    if aws_service == "ec2":
+        return resource["Hypervisor"]
+    if aws_service == "rds":
+        return None
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_engine(aws_service, resource):
+    if aws_service == "ec2":
+        return None
+    if aws_service == "rds":
+        return resource["Engine"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_multi_az(aws_service, resource):
+    if aws_service == "ec2":
+        return None
+    if aws_service == "rds":
+        return resource["MultiAZ"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_allocated_storage(aws_service, resource):
+    if aws_service == "ec2":
+        return 0
+    if aws_service == "rds":
+        return resource["AllocatedStorage"]
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_iops(aws_service, resource):
+    if aws_service == "ec2":
+        return None
+    if aws_service == "rds":
+        if "Iops" in resource:
+            return resource["Iops"]
+        else:
+            return 0
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
+def get_resource_tags(aws_service, resource):
+    if aws_service == "ec2":
+        return json.dumps(resource["Tags"])
+    if aws_service == "rds":
+        return None
+    raise Exception("Unexpected aws_service {}".format(aws_service))
+
+
 def process_aws_tagged_resources(tagged_resources):
     first_region = list(tagged_resources.keys())[0]
     services_enabled = list(tagged_resources[first_region].keys())
-    sheets = []
+    resources = {}
     for aws_service in services_enabled:
-        headers = [
-            "TagGroup",
-            "AwsRegion",
-            "InstanceClass",
-            "NormalizedCapacity",
-        ]
-        rows = []
         for aws_region in tagged_resources:
             print(
                 "Processing data for {aws_region} {aws_service}..".format(
@@ -243,53 +404,89 @@ def process_aws_tagged_resources(tagged_resources):
                     for resource in tagged_resources[aws_region][aws_service][
                         tag_group_name
                     ]:
-                        if len(headers) == 4:
-                            headers.extend(list(resource.keys()))
-                        row = []
-                        for header in headers:
-                            if header == "TagGroup":
-                                row.append(tag_group_name)
-                            elif header == "AwsRegion":
-                                row.append(aws_region)
-                            elif header == "InstanceClass":
-                                row.append(
-                                    get_resource_instance_class(
-                                        aws_service, resource
-                                    )
-                                )
-                            elif header == "NormalizedCapacity":
-                                row.append(
-                                    get_resource_normalized_capacity(
-                                        aws_service, resource
-                                    )
-                                )
-                            elif header not in resource:
-                                row.append("")
-                            elif header == "Tags":
-                                row.append(json.dumps(resource[header]))
-                            elif header == "State":
-                                row.append(resource[header]["Name"])
-                            elif isinstance(
-                                resource[header], datetime.datetime,
-                            ):  # Google Sheets-friendly dates
-                                row.append(
-                                    convert_to_gsheets_friendly_date(
-                                        resource[header]
-                                    )
-                                )
-                            elif isinstance(resource[header], (dict, list),):
-                                row.append("<Object>")
-                            else:
-                                row.append(resource[header])
-                        rows.append(row)
-        sheets.append(
-            {
-                "sheet_name": "{}_my_instances".format(aws_service.lower()),
-                "headers": headers,
-                "rows": rows,
-            }
-        )
-    return sheets
+                        resource_id = get_resource_id(aws_service, resource)
+                        availability_zone = get_resource_availability_zone(
+                            aws_service,
+                            resource,
+                        )
+                        instance_class = get_resource_instance_class(
+                            aws_service,
+                            resource,
+                        )
+                        image_id = get_resource_image_id(
+                            aws_service,
+                            resource,
+                        )
+                        instance_type = get_resource_instance_type(
+                            aws_service,
+                            resource,
+                        )
+                        normalized_capacity = get_resource_normalized_capacity(
+                            aws_service,
+                            resource,
+                        )
+                        launch_time = get_resource_launch_time(
+                            aws_service,
+                            resource,
+                        )
+                        private_ip_address = get_resource_ip(
+                            aws_service,
+                            resource,
+                            "private",
+                        )
+                        public_ip_address = get_resource_ip(
+                            aws_service,
+                            resource,
+                            "public",
+                        )
+                        state = get_resource_state(aws_service, resource)
+                        subnet_id = get_resource_subnet_id(
+                            aws_service,
+                            resource,
+                        )
+                        vpc_id = get_resource_vpc_id(aws_service, resource)
+                        architecture = get_resource_architecture(
+                            aws_service,
+                            resource,
+                        )
+                        hypervisor = get_resource_hypervisor(
+                            aws_service,
+                            resource,
+                        )
+                        engine = get_resource_engine(aws_service, resource)
+                        multi_az = get_resource_multi_az(aws_service, resource)
+                        allocated_storage = get_resource_allocated_storage(
+                            aws_service,
+                            resource,
+                        )
+                        iops = get_resource_iops(aws_service, resource)
+                        tags = get_resource_tags(aws_service, resource)
+                        resources[resource_id] = dict(
+                            id=resource_id,
+                            tag_group=tag_group_name,
+                            account_name=resource["AccountName"],
+                            service=aws_service,
+                            region=aws_region,
+                            availability_zone=availability_zone,
+                            instance_class=instance_class,
+                            normalized_capacity=normalized_capacity,
+                            image_id=image_id,
+                            instance_type=instance_type,
+                            launch_time=launch_time,
+                            private_ip_address=private_ip_address,
+                            public_ip_address=public_ip_address,
+                            state=state,
+                            subnet_id=subnet_id,
+                            vpc_id=vpc_id,
+                            architecture=architecture,
+                            hypervisor=hypervisor,
+                            engine=engine,
+                            multi_az=multi_az,
+                            allocated_storage=allocated_storage,
+                            iops=iops,
+                            tags=tags,
+                        )
+    return resources
 
 
 def load_config():
@@ -305,16 +502,16 @@ def main():
 
     # test_data_insert()
 
-    # # Look-up per-service usage
-    # tagged_resources = {}
-    # for aws_region in config["aws"]["regions"]:
-    #     tagged_resources[aws_region] = get_my_tagged_resources(
-    #         aws_region=aws_region,
-    #         accounts=config["aws"]["accounts"],
-    #         enabled_services=config["aws"]["enabled_reports"],
-    #         ec2_tag_groups=config["aws"]["ec2_tag_groups"],
-    #         rds_tag_groups=config["aws"]["rds_tag_groups"],
-    #     )
+    # Look-up per-service usage
+    tagged_resources = {}
+    for aws_region in config["aws"]["regions"]:
+        tagged_resources[aws_region] = get_my_tagged_resources(
+            aws_region=aws_region,
+            accounts=config["aws"]["accounts"],
+            enabled_services=config["aws"]["enabled_reports"],
+            ec2_tag_groups=config["aws"]["ec2_tag_groups"],
+            rds_tag_groups=config["aws"]["rds_tag_groups"],
+        )
 
     # Get reservation data for all enabled regions
     reservation_data = {}
@@ -326,15 +523,17 @@ def main():
         )
 
     # Process data
-    processed_data = process_aws_reservation_data(reservation_data)
+    processed_tagged_resources_data = process_aws_tagged_resources(tagged_resources)
+    processed_reservation_data = process_aws_reservation_data(reservation_data)
 
     # Persist reservation data to Postgres
-    upsert_reservation_data(processed_data)
+    upsert_tagged_resources_data(processed_tagged_resources_data)
+    upsert_reservation_data(processed_reservation_data)
 
-    # Retrieve reservation data from Postgres
-    reservation_data_new = get_reservation_data()
-    for reservation in reservation_data_new:
-        print("Reservation found: {}".format(reservation.id))
+    # # Retrieve reservation data from Postgres
+    # reservation_data_new = get_reservation_data()
+    # for reservation in reservation_data_new:
+    #     print("Reservation found: {}".format(reservation.id))
 
 
 def handler(event, context):
