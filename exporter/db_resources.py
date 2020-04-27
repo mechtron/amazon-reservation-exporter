@@ -2,7 +2,7 @@
 
 from sqlalchemy import Boolean, Column, String, Integer, Float, DateTime
 
-from db_base import Base
+from db_base import Session, engine, Base
 
 
 class Resource(Base):
@@ -59,3 +59,22 @@ class Resource(Base):
         self.allocated_storage = kwargs["allocated_storage"]
         self.iops = kwargs["iops"]
         self.tags = kwargs["tags"]
+
+
+def upsert_resources_data(processed_tagged_resources_data):
+    print("Creating database session..")
+    session = Session()
+    print("Creating resource objects..")
+    resource_objects = {}
+    for r_id in processed_tagged_resources_data:
+        resource_objects[r_id] = Resource(**processed_tagged_resources_data[r_id])
+    print("Updating existing resource data..")
+    for resource in session.query(Resource).filter(
+        Resource.id.in_(processed_tagged_resources_data.keys())
+    ).all():
+        session.merge(resource_objects.pop(resource.id))
+    print("Creating new resource data..")
+    session.add_all(resource_objects.values())
+    print("Commit and close database session..")
+    session.commit()
+    session.close()

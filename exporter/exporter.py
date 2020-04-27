@@ -14,12 +14,8 @@ from aws import (
     get_my_tagged_resources,
 )
 from db_base import generate_database_schema
-from db_test import (
-    get_reservation_data,
-    test_data_insert,
-    upsert_reservation_data,
-    upsert_tagged_resources_data,
-)
+from db_reservations import upsert_reservation_data
+from db_resources import upsert_resources_data
 
 
 def get_resource_instance_class(aws_service, resource):
@@ -502,8 +498,6 @@ def main():
 
     generate_database_schema()
 
-    # test_data_insert()
-
     # Look-up per-service usage
     tagged_resources = {}
     for aws_region in config["aws"]["regions"]:
@@ -529,7 +523,7 @@ def main():
     processed_reservation_data = process_aws_reservation_data(reservation_data)
 
     # Persist reservation data to Postgres
-    upsert_tagged_resources_data(processed_tagged_resources_data)
+    upsert_resources_data(processed_tagged_resources_data)
     upsert_reservation_data(processed_reservation_data)
 
     # # Retrieve reservation data from Postgres

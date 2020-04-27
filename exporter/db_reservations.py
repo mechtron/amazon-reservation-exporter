@@ -3,7 +3,7 @@ import datetime
 
 from sqlalchemy import Boolean, Column, String, Integer, Float, DateTime
 
-from db_base import Base
+from db_base import Session, engine, Base
 
 
 class Reservation(Base):
@@ -32,7 +32,6 @@ class Reservation(Base):
     offering_class = Column(String)
     offering_type = Column(String)
 
-
     def __init__(self, **kwargs):
         self.id = kwargs["id"]
         self.service = kwargs["service"]
@@ -57,3 +56,31 @@ class Reservation(Base):
         self.offering_class = kwargs["offering_class"]
         self.offering_type = kwargs["offering_type"]
 
+
+def upsert_reservation_data(processed_reservation_data):
+    print("Creating database session..")
+    session = Session()
+    print("Creating database objects..")
+    reservation_objects = {}
+    for ri_id in processed_reservation_data:
+        reservation_objects[ri_id] = Reservation(**processed_reservation_data[ri_id])
+    print("Updating existing reservation data..")
+    for reservation in session.query(Reservation).filter(
+        Reservation.id.in_(processed_reservation_data.keys())
+    ).all():
+        session.merge(reservation_objects.pop(reservation.id))
+    print("Creating new reservation data..")
+    session.add_all(reservation_objects.values())
+    print("Commit and close database session..")
+    session.commit()
+    session.close()
+
+
+def get_reservation_data():
+    print("Creating database session..")
+    session = Session()
+    print("Looking up reservation data..")
+    reservation_data = session.query(Reservation).all()
+    session.close()
+    print("Reservation data successfully retrieved.")
+    return reservation_data
