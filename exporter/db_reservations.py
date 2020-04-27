@@ -1,4 +1,5 @@
 # coding=utf-8
+import datetime
 
 from sqlalchemy import Boolean, Column, String, Integer, Float, DateTime
 
@@ -23,8 +24,8 @@ class Reservation(Base):
     description = Column(String)
     multi_az = Column(Boolean)
     duration = Column(Integer)
-    start = Column(DateTime)
-    end = Column(DateTime)
+    start = Column(DateTime(timezone=True))
+    end = Column(DateTime(timezone=True))
     fixed_price = Column(Float)
     usage_price = Column(Float)
     recurring_charges = Column(Float)
