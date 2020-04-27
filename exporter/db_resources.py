@@ -14,6 +14,7 @@ class Resource(Base):
     service = Column(String)
     region = Column(String)
     availability_zone = Column(String)
+    last_seen = Column(Date)
     state = Column(String)
     normalized_capacity = Column(Integer)
     image_id = Column(String)
@@ -39,6 +40,7 @@ class Resource(Base):
         self.service = kwargs["service"]
         self.region = kwargs["region"]
         self.availability_zone = kwargs["availability_zone"]
+        self.last_seen = kwargs["last_seen"]
         self.state = kwargs["state"]
         self.instance_class = kwargs["instance_class"]
         self.normalized_capacity = kwargs["normalized_capacity"]

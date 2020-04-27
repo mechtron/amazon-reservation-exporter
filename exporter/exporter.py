@@ -409,6 +409,7 @@ def process_aws_tagged_resources(tagged_resources):
                             aws_service,
                             resource,
                         )
+                        last_seen = datetime.datetime.now()
                         instance_class = get_resource_instance_class(
                             aws_service,
                             resource,
@@ -468,6 +469,7 @@ def process_aws_tagged_resources(tagged_resources):
                             service=aws_service,
                             region=aws_region,
                             availability_zone=availability_zone,
+                            last_seen=last_seen,
                             instance_class=instance_class,
                             normalized_capacity=normalized_capacity,
                             image_id=image_id,
