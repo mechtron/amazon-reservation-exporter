@@ -63,11 +63,15 @@ def upsert_reservation_data(processed_reservation_data):
     print("Creating database objects..")
     reservation_objects = {}
     for ri_id in processed_reservation_data:
-        reservation_objects[ri_id] = Reservation(**processed_reservation_data[ri_id])
+        reservation_objects[ri_id] = Reservation(
+            **processed_reservation_data[ri_id]
+        )
     print("Updating existing reservation data..")
-    for reservation in session.query(Reservation).filter(
-        Reservation.id.in_(processed_reservation_data.keys())
-    ).all():
+    for reservation in (
+        session.query(Reservation)
+        .filter(Reservation.id.in_(processed_reservation_data.keys()))
+        .all()
+    ):
         session.merge(reservation_objects.pop(reservation.id))
     print("Creating new reservation data..")
     session.add_all(reservation_objects.values())

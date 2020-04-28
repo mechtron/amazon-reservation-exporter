@@ -101,10 +101,7 @@ def get_reservation_recurring_charges(aws_data):
         return 0
     if "Amount" in aws_data["RecurringCharges"][0]:
         return aws_data["RecurringCharges"][0]["Amount"]
-    if (
-        "RecurringChargeAmount"
-        in aws_data["RecurringCharges"][0]
-    ):
+    if "RecurringChargeAmount" in aws_data["RecurringCharges"][0]:
         return aws_data["RecurringCharges"][0]["RecurringChargeAmount"]
     return 0
 

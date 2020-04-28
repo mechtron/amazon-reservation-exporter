@@ -35,7 +35,7 @@ database_uri = "postgresql://{username}:{password}@{host}/{db_name}".format(
     host=DATABASE_HOSTNAME,
     db_name=DATABASE_NAME,
 )
-config.set_main_option('sqlalchemy.url', database_uri)
+config.set_main_option("sqlalchemy.url", database_uri)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
