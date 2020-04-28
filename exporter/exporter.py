@@ -7,6 +7,8 @@ from pathlib import Path
 import re
 import string
 import time
+
+import pytz
 import yaml
 
 from aws import (
@@ -405,7 +407,9 @@ def process_aws_tagged_resources(tagged_resources):
                             aws_service,
                             resource,
                         )
-                        last_seen = datetime.datetime.now()
+                        last_seen = datetime.datetime.utcnow().replace(
+                            tzinfo=pytz.utc,
+                        )
                         instance_class = get_resource_instance_class(
                             aws_service,
                             resource,
