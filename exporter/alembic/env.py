@@ -13,11 +13,6 @@ from db_base import Base
 from db_reservations import Reservation
 from db_resources import Resource
 
-from db_actor import Actor
-from db_contact_details import ContactDetails
-from db_movie import Movie
-from db_stuntman import Stuntman
-
 
 DATABASE_HOSTNAME = os.environ.get("DATABASE_HOSTNAME")
 DATABASE_USERNAME = os.environ.get("DATABASE_USERNAME")
