@@ -232,6 +232,7 @@ All of the AWS resources provisioned by this project fit within [AWS's always-fr
 
 Consider adding reports with data from Cost Explorer:
 
+1. Rename to `mechtron/ara` "ARA: Amazon Reservations Anaylzer"
 1. [CostExplorer.Client.get_reservation_coverage](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_reservation_coverage)
 1. [CostExplorer.Client.get_reservation_purchase_recommendation](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_reservation_purchase_recommendation)
 1. [CostExplorer.Client.get_reservation_utilization](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ce.html#CostExplorer.Client.get_reservation_utilization)
