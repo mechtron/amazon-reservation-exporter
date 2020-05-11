@@ -21,7 +21,7 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "amazon_lambda_exec_policy" {
   role       = aws_iam_role.lambda_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 resource "aws_iam_role_policy" "app_permissions" {

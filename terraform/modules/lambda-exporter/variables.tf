@@ -27,3 +27,18 @@ variable "assume_role_arns" {
   description = "A list of IAM roles that the function can assume"
   default = "[]"
 }
+
+variable "vpc_id" {
+  description = "ID of the VPC to place the RDS database"
+}
+
+variable "subnet_ids" {
+  description = "ID of the subnets to include in the database's subnet group in"
+  type = list(string)
+}
+
+variable "db_additional_sgs_to_trust" {
+  description = "A list of additional security group IDs for the database to trust"
+  type = list(string)
+  default = []
+}
