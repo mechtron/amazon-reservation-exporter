@@ -230,6 +230,8 @@ All of the AWS resources provisioned by this project fit within [AWS's always-fr
 
 ## To do
 
+Create visualizations/dashboard of AWS cost data using [Apache SuperSet](https://github.com/apache/incubator-superset) ([tutorial](https://superset.apache.org/admintutorial.html))
+
 Consider adding reports with data from Cost Explorer:
 
 1. Rename to `mechtron/ara` "ARA: Amazon Reservations Anaylzer"
