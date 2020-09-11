@@ -124,7 +124,7 @@
         aws_region: us-east-1
         tags:
           - tag_name: Billing
-            tag_value: astronomer-airflow-poc
+            tag_value: astronomer-airflow
 
       - name: va-consul
         aws_region: us-east-1
@@ -360,7 +360,7 @@
         aws_region: us-east-1
         tags:
           - tag_name: Billing
-            tag_value: astronomer-airflow-poc
+            tag_value: astronomer-airflow
 
       - name: va-bi
         aws_region: us-east-1
