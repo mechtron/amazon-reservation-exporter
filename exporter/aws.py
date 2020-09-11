@@ -38,21 +38,17 @@ class AwsClient:
                 aws_session_token=self.credentials["SessionToken"],
             )
 
-    def get_my_ec2_instances(self, tag_name, tag_value):
+    def get_my_ec2_instances(self):
         print(
             (
                 "Looking up EC2 instances for account {account} in {region} "
-                "with tag key {key} and tag value {value}.."
             ).format(
                 account=self.account_name,
                 region=self.region,
-                key=tag_name,
-                value=tag_value,
             )
         )
         ec2_instances_all_running = self.ec2_client.describe_instances(
             Filters=[
-                {"Name": "tag:{}".format(tag_name), "Values": [tag_value]},
                 {"Name": "instance-state-name", "Values": ["running"]},
             ]
         )
@@ -66,29 +62,20 @@ class AwsClient:
                     ec2_instances.append(ec2_instance)
         return ec2_instances
 
-    def get_my_rds_instances(self, tag_name, tag_value):
-        print(
-            (
-                "Looking up RDS instances for account {account} in {region} "
-                "with tag key {key} and tag value {value}.."
-            ).format(
-                account=self.account_name,
-                region=self.region,
-                key=tag_name,
-                value=tag_value,
-            )
-        )
+    def get_my_rds_instances(self):
+        print("Looking up RDS instances for account {account} in {region} ".format(
+            account=self.account_name,
+            region=self.region,
+        ))
         rds_instances = self.rds_client.describe_db_instances()
-        filtered_rds_instances = []
+        tagged_rds_instances = []
         for rds_instance in rds_instances["DBInstances"]:
-            tags = self.rds_client.list_tags_for_resource(
+            rds_instance["Tags"] = self.rds_client.list_tags_for_resource(
                 ResourceName=rds_instance["DBInstanceArn"],
             )["TagList"]
-            for tag in tags:
-                if tag["Key"] == tag_name and tag["Value"] == tag_value:
-                    rds_instance["AccountName"] = self.account_name
-                    filtered_rds_instances.append(rds_instance)
-        return filtered_rds_instances
+            rds_instance["AccountName"] = self.account_name
+            tagged_rds_instances.append(rds_instance)
+        return tagged_rds_instances
 
     def get_my_ec2_reservations(self):
         print(
@@ -117,6 +104,15 @@ class AwsClient:
         return rds_reservations
 
 
+def filter_tagged_resources(tagged_resource_list, tag_name, tag_value):
+    filtered_resources = []
+    for resource in tagged_resource_list:
+        for tag in resource["Tags"]:
+            if tag["Key"] == tag_name and tag["Value"] == tag_value:
+                filtered_resources.append(resource)
+    return filtered_resources
+
+
 def get_my_tagged_resources(**kwargs):
     tagged_resources = {}
     for account in kwargs["accounts"]:
@@ -125,6 +121,7 @@ def get_my_tagged_resources(**kwargs):
             if enabled_service not in tagged_resources:
                 tagged_resources[enabled_service] = {}
             if enabled_service == "ec2":
+                ec2_instances = aws_client.get_my_ec2_instances()
                 for tag_group in kwargs["ec2_tag_groups"]:
                     if tag_group["aws_region"] == kwargs["aws_region"]:
                         if (
@@ -138,11 +135,14 @@ def get_my_tagged_resources(**kwargs):
                             tagged_resources[enabled_service][
                                 tag_group["name"]
                             ].extend(
-                                aws_client.get_my_ec2_instances(
-                                    tag["tag_name"], tag["tag_value"],
+                                filter_tagged_resources(
+                                    ec2_instances,
+                                    tag["tag_name"],
+                                    tag["tag_value"],
                                 )
                             )
             if enabled_service == "rds":
+                rds_instances = aws_client.get_my_rds_instances()
                 for tag_group in kwargs["rds_tag_groups"]:
                     if tag_group["aws_region"] == kwargs["aws_region"]:
                         if (
@@ -156,8 +156,10 @@ def get_my_tagged_resources(**kwargs):
                             tagged_resources[enabled_service][
                                 tag_group["name"]
                             ].extend(
-                                aws_client.get_my_rds_instances(
-                                    tag["tag_name"], tag["tag_value"],
+                                filter_tagged_resources(
+                                    rds_instances,
+                                    tag["tag_name"],
+                                    tag["tag_value"],
                                 )
                             )
     return tagged_resources
