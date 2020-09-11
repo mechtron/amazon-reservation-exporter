@@ -20,7 +20,7 @@ jobs:
       uses: mechtron/amazon-reservation-exporter/set-env-action@0.2.0
     - name: Run Terragrunt
       id: run_terragrunt
-      uses: mechtron/amazon-reservation-exporter/terragrunt-action@cache-ec2-rds-instances
+      uses: mechtron/amazon-reservation-exporter/terragrunt-action@0.7.0
       with:
         env: ${{ steps.set_env.outputs.env }}
         tf_action: apply
